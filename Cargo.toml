@@ -10,3 +10,5 @@ homepage = "https://github.com/Clazex/hk_modlinks#readme"
 repository = "https://github.com/Clazex/hk_modlinks/"
 
 [dependencies]
+quick-xml = { version = "0.27.1", features = ["serialize"] }
+serde = { version = "1.0.152", features = ["derive"] }
