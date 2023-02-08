@@ -1,0 +1,12 @@
+[package]
+name = "hk_modlinks"
+version = "0.1.0"
+description = "Rust data model and tools for hk-modding/hk-modlinks"
+edition = "2021"
+authors = ["Clazex <clazex.y@gmail.com>"]
+license = "MIT"
+publish = false
+homepage = "https://github.com/Clazex/hk_modlinks#readme"
+repository = "https://github.com/Clazex/hk_modlinks/"
+
+[dependencies]
