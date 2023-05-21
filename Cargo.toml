@@ -1,5 +1,5 @@
 [workspace]
-members = ["hk_modlinks"]
+members = ["hk_modlinks", "hkml"]
 
 [workspace.package]
 description = "Rust data model and tools for hk-modding/hk-modlinks"
