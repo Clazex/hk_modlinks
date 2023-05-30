@@ -1,7 +1,7 @@
 [package]
 name = "hkml"
 version = "0.1.0"
-description.workspace = true
+description = "Commandline tool for manipulating data from hk-modding/hk-modlinks"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true

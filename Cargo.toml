@@ -2,7 +2,6 @@
 members = ["hk_modlinks", "hkml"]
 
 [workspace.package]
-description = "Rust data model and tools for hk-modding/hk-modlinks"
 edition = "2021"
 authors = ["Clazex <clazex.y@gmail.com>"]
 license = "MIT"
