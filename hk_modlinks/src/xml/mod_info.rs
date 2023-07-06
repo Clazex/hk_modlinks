@@ -15,6 +15,7 @@ pub struct ModInfo {
     links: Links,
     dependencies: Option<Dependencies>,
     repository: Option<String>,
+    issues: Option<String>,
     integrations: Option<Integrations>,
     tags: Option<Tags>,
     authors: Option<Authors>,
@@ -60,6 +61,7 @@ impl From<(String, crate::ModInfo)> for ModInfo {
                 _ => Some(Dependencies::new(info.dependencies)),
             },
             repository: info.repository,
+            issues: info.issues,
             integrations: match info.integrations.len() {
                 0 => None,
                 _ => Some(Integrations::new(info.integrations)),
@@ -86,13 +88,16 @@ impl From<ModInfo> for (String, crate::ModInfo) {
                 links: value.links.into(),
                 dependencies: value
                     .dependencies
-                    .map_or_else(Default::default, |v| v.inner()),
+                    .map_or_else(Default::default, |v| v.into_inner()),
                 repository: value.repository,
+                issues: value.issues,
                 integrations: value
                     .integrations
-                    .map_or_else(Default::default, |v| v.inner()),
-                tags: value.tags.map_or_else(Default::default, |v| v.inner()),
-                authors: value.authors.map_or_else(Default::default, |v| v.inner()),
+                    .map_or_else(Default::default, |v| v.into_inner()),
+                tags: value.tags.map_or_else(Default::default, |v| v.into_inner()),
+                authors: value
+                    .authors
+                    .map_or_else(Default::default, |v| v.into_inner()),
             },
         )
     }

@@ -21,6 +21,10 @@ pub struct ModInfo {
     #[builder(default)]
     pub repository: Option<String>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[builder(default)]
+    pub issues: Option<String>,
+
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     #[builder(default, setter(each(name = "integration", into)))]
     pub integrations: BTreeSet<String>,
@@ -50,6 +54,10 @@ impl ModInfo {
 
         if let Some(repo) = self.repository {
             builder.repository(repo);
+        }
+
+        if let Some(issues) = self.issues {
+            builder.issues(issues);
         }
 
         builder
