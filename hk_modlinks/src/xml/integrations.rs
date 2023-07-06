@@ -15,7 +15,7 @@ impl Integrations {
         }
     }
 
-    pub fn inner(self) -> BTreeSet<String> {
+    pub fn into_inner(self) -> BTreeSet<String> {
         self.inner
     }
 }
