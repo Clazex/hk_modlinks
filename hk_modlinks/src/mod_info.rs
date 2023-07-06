@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 
-use crate::{Links, Tag};
+use crate::Links;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Builder)]
 #[builder(derive(Debug), setter(into, strip_option))]
@@ -27,7 +27,7 @@ pub struct ModInfo {
 
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     #[builder(default, setter(each(name = "tag", into)))]
-    pub tags: BTreeSet<Tag>,
+    pub tags: BTreeSet<String>,
 
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     #[builder(default, setter(each(name = "author", into)))]

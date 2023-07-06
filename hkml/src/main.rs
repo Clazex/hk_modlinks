@@ -1,6 +1,5 @@
 mod cli;
 mod format;
-mod tag;
 
 use cli::*;
 pub use format::*;
