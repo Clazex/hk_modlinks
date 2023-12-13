@@ -42,11 +42,18 @@ impl ModLinks {
     }
 
     pub fn to_xml(&self) -> Result<String, quick_xml::DeError> {
-        quick_xml::se::to_string(&self)
+        let mut string = String::new();
+        self.to_xml_writer(&mut string)?;
+        Ok(string)
     }
 
-    pub fn to_xml_writer<W: std::fmt::Write>(&self, writer: W) -> Result<(), quick_xml::DeError> {
-        quick_xml::se::to_writer(writer, &self)
+    pub fn to_xml_writer<W: std::fmt::Write>(
+        &self,
+        mut writer: W,
+    ) -> Result<(), quick_xml::DeError> {
+        let mut serializer = quick_xml::se::Serializer::new(&mut writer);
+        serializer.indent('\t', 1);
+        self.serialize(serializer)
     }
 
     pub fn from_xml(s: &str) -> Result<Self, quick_xml::DeError> {

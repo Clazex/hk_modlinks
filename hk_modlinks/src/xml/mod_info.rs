@@ -13,11 +13,17 @@ pub struct ModInfo {
     version: String,
     #[serde(flatten)]
     links: Links,
+    #[serde(skip_serializing_if = "Option::is_none")]
     dependencies: Option<Dependencies>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     repository: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     issues: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     integrations: Option<Integrations>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     tags: Option<Tags>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     authors: Option<Authors>,
 }
 
@@ -37,7 +43,7 @@ impl Eq for ModInfo {}
 
 impl PartialOrd for ModInfo {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.name.partial_cmp(&other.name)
+        Some(self.cmp(other))
     }
 }
 
@@ -56,24 +62,12 @@ impl From<(String, crate::ModInfo)> for ModInfo {
             description: info.description,
             version: info.version,
             links: info.links.into(),
-            dependencies: match info.dependencies.len() {
-                0 => None,
-                _ => Some(Dependencies::new(info.dependencies)),
-            },
+            dependencies: Dependencies::wrap(info.dependencies),
             repository: info.repository,
             issues: info.issues,
-            integrations: match info.integrations.len() {
-                0 => None,
-                _ => Some(Integrations::new(info.integrations)),
-            },
-            tags: match info.tags.len() {
-                0 => None,
-                _ => Some(Tags::new(info.tags)),
-            },
-            authors: match info.authors.len() {
-                0 => None,
-                _ => Some(Authors::new(info.authors)),
-            },
+            integrations: Integrations::wrap(info.integrations),
+            tags: Tags::wrap(info.tags),
+            authors: Authors::wrap(info.authors),
         }
     }
 }
@@ -86,18 +80,12 @@ impl From<ModInfo> for (String, crate::ModInfo) {
                 description: value.description,
                 version: value.version,
                 links: value.links.into(),
-                dependencies: value
-                    .dependencies
-                    .map_or_else(Default::default, |v| v.into_inner()),
+                dependencies: Dependencies::unwrap(value.dependencies),
                 repository: value.repository,
                 issues: value.issues,
-                integrations: value
-                    .integrations
-                    .map_or_else(Default::default, |v| v.into_inner()),
-                tags: value.tags.map_or_else(Default::default, |v| v.into_inner()),
-                authors: value
-                    .authors
-                    .map_or_else(Default::default, |v| v.into_inner()),
+                integrations: Integrations::unwrap(value.integrations),
+                tags: Tags::unwrap(value.tags),
+                authors: Authors::unwrap(value.authors),
             },
         )
     }
