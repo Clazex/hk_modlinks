@@ -30,10 +30,28 @@ impl FromIterator<(String, ModInfo)> for ModLinks {
 
 impl IntoIterator for ModLinks {
     type IntoIter = btree_map::IntoIter<String, ModInfo>;
-    type Item = (String, ModInfo);
+    type Item = <Self::IntoIter as Iterator>::Item;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a ModLinks {
+    type IntoIter = btree_map::Iter<'a, String, ModInfo>;
+    type Item = <Self::IntoIter as Iterator>::Item;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut ModLinks {
+    type IntoIter = btree_map::IterMut<'a, String, ModInfo>;
+    type Item = <Self::IntoIter as Iterator>::Item;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter_mut()
     }
 }
 
