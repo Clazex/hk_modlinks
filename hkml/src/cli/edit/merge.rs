@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::Args;
 
 use hk_modlinks::ModLinks;
@@ -8,7 +10,7 @@ use crate::Result;
 #[derive(Args, Debug, Clone)]
 pub struct Merge {
     #[arg(required(true))]
-    files: Vec<String>,
+    files: Vec<PathBuf>,
 
     #[command(flatten)]
     out_args: OutArgs,

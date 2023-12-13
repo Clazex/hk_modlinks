@@ -1,6 +1,6 @@
 use std::fs;
 use std::io::{self, prelude::*, Cursor};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use actix_web::http::header::{
@@ -25,7 +25,7 @@ pub struct Mirror {
     #[arg(short, long)]
     base_url: Url,
     #[arg(short, long)]
-    dir: String,
+    dir: PathBuf,
     #[command(flatten)]
     in_args: InArgs,
 }
@@ -41,7 +41,7 @@ impl Run for Mirror {
         );
         let mods_url = base_url.join("mods/")?;
 
-        fs_extra::dir::create_all(self.dir.as_str(), true)?;
+        fs_extra::dir::create_all(&self.dir, true)?;
         let base_dir = fs::canonicalize(self.dir)?;
 
         let mods_dir = base_dir.join("mods");

@@ -6,6 +6,7 @@ mod validate;
 
 use std::fs::File;
 use std::io::{self, prelude::*};
+use std::path::PathBuf;
 
 use clap::{Args, Parser};
 
@@ -71,7 +72,7 @@ pub struct InArgs {
     #[arg(long, value_name = "FORMAT")]
     stdin: Option<Format>,
     #[arg(short, value_name = "FILE")]
-    r#in: Option<String>,
+    r#in: Option<PathBuf>,
 }
 
 impl InArgs {
@@ -104,7 +105,7 @@ impl InArgs {
         })
     }
 
-    fn read_from(stdin: Option<Format>, r#in: Option<String>) -> Result<ModLinks> {
+    fn read_from(stdin: Option<Format>, r#in: Option<PathBuf>) -> Result<ModLinks> {
         Self { stdin, r#in }.read()
     }
 }
@@ -115,7 +116,7 @@ pub struct OutArgs {
     #[arg(long, value_name = "FORMAT")]
     stdout: Option<Format>,
     #[arg(short, value_name = "FILE")]
-    out: Option<String>,
+    out: Option<PathBuf>,
 }
 
 impl OutArgs {

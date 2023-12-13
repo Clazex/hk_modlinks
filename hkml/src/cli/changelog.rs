@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
 
 use clap::Args;
 
@@ -9,12 +10,12 @@ use crate::Result;
 #[derive(Args, Debug, Clone)]
 pub struct Changelog {
     #[arg(value_name = "OLD FILE")]
-    from: String,
+    from: PathBuf,
     #[arg(value_name = "NEW FILE")]
-    to: String,
+    to: PathBuf,
 
     #[arg(short, long, value_name = "FILE")]
-    out: Option<String>,
+    out: Option<PathBuf>,
 }
 
 impl Run for Changelog {
