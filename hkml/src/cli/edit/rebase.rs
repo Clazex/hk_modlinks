@@ -2,6 +2,8 @@ use std::error::Error;
 
 use clap::{Args, Subcommand};
 
+use url::Url;
+
 use hk_modlinks::{get_safe_mod_name, FileDef, Links, ModInfo};
 
 use super::{InArgs, OutArgs, Run};
@@ -23,11 +25,11 @@ pub enum Operation {
     /// Replace a base url with another
     Replace {
         #[arg(default_value = DEFAULT_MODLINKS_BASE)]
-        from: String,
-        to: String,
+        from: Url,
+        to: Url,
     },
     /// Substitute all links under pre-defined rules with a specified root
-    Root { root: String },
+    Root { root: Url },
 }
 
 type RebaseFn = Box<dyn FnMut(&str, &mut ModInfo)>;
@@ -49,10 +51,10 @@ impl Run for Rebase {
     }
 }
 
-fn replace_fn(from: String, to: String) -> RebaseFn {
+fn replace_fn(from: Url, to: Url) -> RebaseFn {
     let edit_fn = move |file: &mut FileDef| {
-        if let Some(remainder) = file.url.strip_prefix(from.as_str()) {
-            file.url = format!("{to}{remainder}");
+        if let Some(rel) = from.make_relative(&file.url) {
+            file.url = to.join(&rel).unwrap();
         }
     };
 
@@ -70,30 +72,33 @@ fn replace_fn(from: String, to: String) -> RebaseFn {
     })
 }
 
-fn root_fn(root: String) -> RebaseFn {
-    let root_1 = root.clone();
+fn root_fn(root: Url) -> RebaseFn {
+    let root1 = root.clone();
+
     let uni_edit_fn = move |file: &mut FileDef, name: &str, version: &str| {
-        file.url = format!("{root_1}/mods/{name}-v{version}.zip");
+        file.url = root.join(&format!("mods/{name}-v{version}.zip")).unwrap();
     };
 
     let plat_edit_fn = move |file: &mut FileDef, name: &str, version: &str, platform: &str| {
-        file.url = format!("{root}/mods/{name}-v{version}-{platform}.zip");
+        file.url = root1
+            .join(&format!("mods/{name}-v{version}-{platform}.zip"))
+            .unwrap();
     };
 
     Box::new(move |name: &str, info: &mut ModInfo| {
         let ModInfo { version, .. } = info;
-        let name = get_safe_mod_name(name);
+        let name = &get_safe_mod_name(name);
 
         match &mut info.links {
-            Links::Universal(universal) => uni_edit_fn(universal, name.as_str(), version),
+            Links::Universal(universal) => uni_edit_fn(universal, name, version),
             Links::PlatformDependent {
                 windows,
                 mac,
                 linux,
             } => {
-                plat_edit_fn(windows, name.as_str(), version, "Win");
-                plat_edit_fn(mac, name.as_str(), version, "Mac");
-                plat_edit_fn(linux, name.as_str(), version, "Linux");
+                plat_edit_fn(windows, name, version, "Win");
+                plat_edit_fn(mac, name, version, "Mac");
+                plat_edit_fn(linux, name, version, "Linux");
             }
         }
     })

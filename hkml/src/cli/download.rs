@@ -180,7 +180,7 @@ pub fn download_and_verify(
     agent: &ureq::Agent,
     file: &FileDef,
 ) -> Result<(Vec<u8>, Option<String>)> {
-    let resp = agent.get(file.url.as_ref()).call()?;
+    let resp = agent.get(file.url.as_str()).call()?;
 
     let disposition = resp
         .header(CONTENT_DISPOSITION.as_str())

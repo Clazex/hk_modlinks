@@ -49,7 +49,7 @@ impl Run for Validate {
 fn verify(agent: &ureq::Agent, name: &String, file: FileDef, variant: Option<&'static str>) {
     let mut hasher = <Sha256 as Digest>::new();
     io::copy(
-        &mut agent.get(&file.url).call().unwrap().into_reader(),
+        &mut agent.get(file.url.as_str()).call().unwrap().into_reader(),
         &mut hasher,
     )
     .unwrap();

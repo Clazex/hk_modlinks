@@ -115,7 +115,7 @@ fn download_and_update(
     fs::write(mods_dir.as_ref().join(file_name), &zip)?;
 
     file.sha256 = <Sha256 as Digest>::digest(zip).into();
-    file.url = mods_url.join(file_name)?.into();
+    file.url = mods_url.join(file_name)?;
 
     Ok(())
 }

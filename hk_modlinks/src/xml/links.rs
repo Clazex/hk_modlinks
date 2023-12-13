@@ -26,9 +26,9 @@ impl From<crate::Links> for Links {
                 mac,
                 linux,
             } => Self::PlatformDependent {
-                windows: windows.into(),
-                mac: mac.into(),
-                linux: linux.into(),
+                windows: Box::new((*windows).into()),
+                mac: Box::new((*mac).into()),
+                linux: Box::new((*linux).into()),
             },
         }
     }

@@ -2,6 +2,8 @@ use std::fmt::{self, Debug};
 
 use serde::{Deserialize, Serialize};
 
+use url::Url;
+
 #[derive(Clone, Deserialize, Serialize)]
 pub struct FileDef {
     #[serde(
@@ -11,7 +13,7 @@ pub struct FileDef {
     )]
     sha256: [u8; 32],
     #[serde(rename = "$text")]
-    url: String,
+    url: Url,
 }
 
 impl From<crate::FileDef> for FileDef {
