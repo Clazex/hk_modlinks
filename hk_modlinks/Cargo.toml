@@ -12,16 +12,16 @@ repository.workspace = true
 [dependencies]
 derive_builder = "0.12.0"
 hex = { version = "0.4.3", features = ["serde"] }
-serde = { version = "1.0.163", features = ["derive"] }
+serde = { version = "1.0.190", features = ["derive"] }
 
-quick-xml = { version = "0.28.2", features = ["serialize", "escape-html"], optional = true }
+quick-xml = { version = "0.31.0", features = ["serialize", "escape-html"], optional = true }
 
-ron = { version = "0.8.0", optional = true }
-serde_json = { version = "1.0.96", optional = true }
-serde_yaml = { version = "0.9.21", optional = true }
-toml = { version = "0.7.4", optional = true }
+ron = { version = "0.8.1", optional = true }
+serde_json = { version = "1.0.108", optional = true }
+serde_yaml = { version = "0.9.27", optional = true }
+toml = { version = "0.8.8", optional = true }
 
-handlebars = { version = "4.3.7", optional = true }
+handlebars = { version = "4.5.0", optional = true }
 lazy_static = { version = "1.4.0", optional = true }
 
 [features]
