@@ -4,6 +4,9 @@ mod links;
 mod mod_info;
 mod mod_links;
 
+#[cfg(feature = "safe-name")]
+mod safe_name;
+
 #[cfg(feature = "xml")]
 mod xml;
 
@@ -21,6 +24,9 @@ pub use file_def::*;
 pub use links::*;
 pub use mod_info::*;
 pub use mod_links::*;
+
+#[cfg(feature = "safe-name")]
+pub use safe_name::*;
 
 #[cfg(feature = "xml")]
 pub use xml::{ApiLinks as ApiLinksXmlCompat, ModLinks as ModLinksXmlCompat};

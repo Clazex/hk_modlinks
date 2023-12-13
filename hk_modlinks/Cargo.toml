@@ -25,7 +25,8 @@ handlebars = { version = "4.3.7", optional = true }
 lazy_static = { version = "1.4.0", optional = true }
 
 [features]
-default = ["xml"]
+default = ["safe-name", "xml"]
+safe-name = []
 xml = ["dep:quick-xml"]
 xml-encoding = ["xml", "quick-xml?/encoding"]
 convert = []
