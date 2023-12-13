@@ -1,49 +1,45 @@
 use std::ffi::OsStr;
+use std::path::Path;
 use std::{fs, io};
 
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
 pub enum Format {
+    #[cfg(feature = "xml")]
     Xml,
-    Toml,
+    #[cfg(feature = "json")]
     Json,
+    #[cfg(feature = "toml")]
+    Toml,
+    #[cfg(feature = "yaml")]
     Yaml,
+    #[cfg(feature = "ron")]
     Ron,
 }
 
 impl Format {
-    pub fn from_file_extension(s: &OsStr) -> io::Result<Self> {
-        if matches!(s.len(), 3 | 4) {
-            // OsStr has PartialEq<&str>, but cannot be matched directly
-            if s == "xml" {
-                return Ok(Self::Xml);
-            } else if s == "toml" {
-                return Ok(Self::Toml);
-            } else if s == "json" {
-                return Ok(Self::Json);
-            } else if s == "yaml" || s == "yml" {
-                return Ok(Self::Yaml);
-            } else if s == "ron" {
-                return Ok(Self::Ron);
-            }
-        }
+    pub fn from_file_extension(ext: impl AsRef<OsStr>) -> io::Result<Self> {
+        use Format::*;
 
-        Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            format!("Unknown extension: {s:?}"),
-        ))
+        let ext = ext.as_ref();
+        Ok(match ext.to_string_lossy().as_ref() {
+            #[cfg(feature = "xml")]
+            "xml" => Xml,
+            #[cfg(feature = "json")]
+            "json" => Json,
+            #[cfg(feature = "toml")]
+            "toml" => Toml,
+            #[cfg(feature = "yaml")]
+            "yml" | "yaml" => Yaml,
+            #[cfg(feature = "ron")]
+            "ron" => Ron,
+            _ => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("Unknown extension: {ext:?}"),
+            ))?,
+        })
     }
 
-    pub fn from_file_name(s: &str) -> io::Result<Self> {
-        Self::from_file_extension(fs::canonicalize(s)?.extension().unwrap_or_default())
-    }
-
-    pub fn file_extension(&self) -> &str {
-        match self {
-            Self::Xml => "xml",
-            Self::Toml => "toml",
-            Self::Json => "json",
-            Self::Yaml => "yml",
-            Self::Ron => "ron",
-        }
+    pub fn from_path(path: impl AsRef<Path>) -> io::Result<Self> {
+        Self::from_file_extension(fs::canonicalize(path)?.extension().unwrap_or_default())
     }
 }

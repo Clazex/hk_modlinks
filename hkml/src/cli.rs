@@ -62,7 +62,7 @@ impl InArgs {
         let in_format: Format = match &self.r#in {
             Some(path) => {
                 File::open(path)?.read_to_end(&mut buf)?;
-                Format::from_file_name(path)?
+                Format::from_path(path)?
             }
             None => {
                 io::stdin().read_to_end(&mut buf)?;
@@ -72,10 +72,15 @@ impl InArgs {
 
         let slice = buf.as_slice();
         Ok(match in_format {
+            #[cfg(feature = "xml")]
             Format::Xml => ModLinks::from_xml_reader(slice)?,
-            Format::Toml => ModLinks::from_toml(String::from_utf8(buf)?.as_str())?,
+            #[cfg(feature = "json")]
             Format::Json => ModLinks::from_json_reader(slice)?,
+            #[cfg(feature = "toml")]
+            Format::Toml => ModLinks::from_toml(String::from_utf8(buf)?.as_str())?,
+            #[cfg(feature = "yaml")]
             Format::Yaml => ModLinks::from_yaml_reader(slice)?,
+            #[cfg(feature = "ron")]
             Format::Ron => ModLinks::from_ron_reader(slice)?,
         })
     }
@@ -97,15 +102,20 @@ pub struct OutArgs {
 impl OutArgs {
     fn write(self, mod_links: ModLinks) -> Result {
         let (mut writer, out_format): (Box<dyn Write>, _) = match &self.out {
-            Some(path) => (Box::new(File::create(path)?), Format::from_file_name(path)?),
+            Some(path) => (Box::new(File::create(path)?), Format::from_path(path)?),
             None => (Box::new(io::stdout().lock()), self.stdout.unwrap()),
         };
 
         match out_format {
+            #[cfg(feature = "xml")]
             Format::Xml => writer.write_all(mod_links.into_xml()?.as_bytes())?,
-            Format::Toml => writer.write_all(mod_links.to_toml()?.as_bytes())?,
+            #[cfg(feature = "json")]
             Format::Json => mod_links.to_json_writer(writer)?,
+            #[cfg(feature = "toml")]
+            Format::Toml => writer.write_all(mod_links.to_toml()?.as_bytes())?,
+            #[cfg(feature = "yaml")]
             Format::Yaml => mod_links.to_yaml_writer(writer)?,
+            #[cfg(feature = "ron")]
             Format::Ron => mod_links.to_ron_writer(writer)?,
         }
 
