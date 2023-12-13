@@ -7,9 +7,9 @@ use crate::FileDef;
 pub enum Links {
     Universal(FileDef),
     PlatformDependent {
-        windows: FileDef,
-        mac: FileDef,
-        linux: FileDef,
+        windows: Box<FileDef>,
+        mac: Box<FileDef>,
+        linux: Box<FileDef>,
     },
 }
 
@@ -32,9 +32,9 @@ impl Links {
 
     pub fn new_platform_dependent(windows: FileDef, mac: FileDef, linux: FileDef) -> Self {
         Self::PlatformDependent {
-            windows,
-            mac,
-            linux,
+            windows: Box::new(windows),
+            mac: Box::new(mac),
+            linux: Box::new(linux),
         }
     }
 }

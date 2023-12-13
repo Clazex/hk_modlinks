@@ -35,9 +35,9 @@ impl Run for Validate {
                     mac,
                     linux,
                 } => {
-                    verify(&agent, &name, windows, Some("Windows"));
-                    verify(&agent, &name, mac, Some("Mac"));
-                    verify(&agent, &name, linux, Some("Linux"));
+                    verify(&agent, &name, *windows, Some("Windows"));
+                    verify(&agent, &name, *mac, Some("Mac"));
+                    verify(&agent, &name, *linux, Some("Linux"));
                 }
             };
         }

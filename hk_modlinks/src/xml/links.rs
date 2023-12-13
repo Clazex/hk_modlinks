@@ -9,11 +9,11 @@ pub enum Links {
     #[serde(rename = "Links")]
     PlatformDependent {
         #[serde(rename = "Windows")]
-        windows: FileDef,
+        windows: Box<FileDef>,
         #[serde(rename = "Mac")]
-        mac: FileDef,
+        mac: Box<FileDef>,
         #[serde(rename = "Linux")]
-        linux: FileDef,
+        linux: Box<FileDef>,
     },
 }
 
@@ -43,9 +43,9 @@ impl From<Links> for crate::Links {
                 mac,
                 linux,
             } => Self::PlatformDependent {
-                windows: windows.into(),
-                mac: mac.into(),
-                linux: linux.into(),
+                windows: Box::new((*windows).into()),
+                mac: Box::new((*mac).into()),
+                linux: Box::new((*linux).into()),
             },
         }
     }
