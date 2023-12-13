@@ -1,5 +1,6 @@
 mod changelog;
 mod convert;
+mod download;
 mod edit;
 mod resolve;
 mod validate;
@@ -14,6 +15,7 @@ use hk_modlinks::ModLinks;
 
 use changelog::*;
 use convert::*;
+use download::*;
 use edit::*;
 use resolve::*;
 use validate::*;
@@ -46,6 +48,8 @@ macro_rules! impl_run_inner {
 pub enum Cli {
     /// Resolve dependency of given mod(s) in the modlinks
     Resolve(Resolve),
+    /// Download mod(s) with dependencies, as zip files by defaults
+    Download(Download),
     /// Convert modlinks between different formats
     Convert(Convert),
     /// Validate mod relationships in the modlinks
@@ -60,6 +64,7 @@ pub enum Cli {
 impl_run_inner! {
     Cli;
     Resolve,
+    Download,
     Convert,
     Validate,
     Changelog,
