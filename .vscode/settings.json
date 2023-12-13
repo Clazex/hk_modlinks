@@ -1,5 +1,8 @@
 {
 	"cSpell.words": [
-		"hkml"
+		"actix",
+		"hkml",
+		"itertools",
+		"ureq"
 	]
 }
