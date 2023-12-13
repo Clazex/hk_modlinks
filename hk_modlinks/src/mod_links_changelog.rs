@@ -80,11 +80,11 @@ impl ModLinksChangelog {
     fn removed_mods(old: &ModLinks, new: &ModLinks) -> JsonValue {
         to_json_value(
             old.iter()
-                .filter_map(|(name, mod_info)| {
+                .filter_map(|(name, _)| {
                     if new.contains_mod(name) {
                         None
                     } else {
-                        Some(mod_info)
+                        Some(name)
                     }
                 })
                 .collect::<Vec<_>>(),
