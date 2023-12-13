@@ -1,6 +1,10 @@
-use std::error::Error;
+use std::io;
 
 use clap::Args;
+
+use sha2::{Digest, Sha256};
+
+use hk_modlinks::{FileDef, Links};
 
 use super::{InArgs, Run};
 use crate::Result;
@@ -15,20 +19,49 @@ impl Run for Validate {
     fn run(self) -> Result {
         let mod_links = self.in_args.read()?;
 
-        if let Err(mut mods) = mod_links.validate_relations() {
-            let mut msg =
-                String::from("The following mods contains non-existant mod in their relations: ");
+        if let Err(mods) = mod_links.validate_relations() {
+            Err(format!(
+                "The following mods contains non-existant mod in their relations: {}",
+                mods.join(", ")
+            ))?;
+        }
 
-            msg.push_str(mods.pop().unwrap());
-
-            for mod_name in mods {
-                msg.push_str(", ");
-                msg.push_str(mod_name);
-            }
-
-            Err(msg)?;
+        let agent = ureq::AgentBuilder::new().build();
+        for (name, info) in mod_links {
+            match info.links {
+                Links::Universal(file) => verify(&agent, &name, file, None),
+                Links::PlatformDependent {
+                    windows,
+                    mac,
+                    linux,
+                } => {
+                    verify(&agent, &name, windows, Some("Windows"));
+                    verify(&agent, &name, mac, Some("Mac"));
+                    verify(&agent, &name, linux, Some("Linux"));
+                }
+            };
         }
 
         Ok(())
+    }
+}
+
+fn verify(agent: &ureq::Agent, name: &String, file: FileDef, variant: Option<&'static str>) {
+    let mut hasher = <Sha256 as Digest>::new();
+    io::copy(
+        &mut agent.get(&file.url).call().unwrap().into_reader(),
+        &mut hasher,
+    )
+    .unwrap();
+    let hash: [u8; 32] = <Sha256 as Digest>::finalize(hasher).into();
+
+    if hash != file.sha256 {
+        eprint!("Hash mismatch for {name}");
+        if variant.is_some() {
+            eprint!(" ({})", variant.unwrap())
+        }
+        eprintln!();
+        eprintln!("  Expected: {}", hex::encode_upper(file.sha256));
+        eprintln!("  Actual:   {}", hex::encode_upper(hash));
     }
 }
