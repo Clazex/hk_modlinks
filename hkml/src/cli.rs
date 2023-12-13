@@ -4,11 +4,8 @@ mod merge;
 mod resolve;
 mod validate;
 
-use std::{
-    error::Error,
-    fs::File,
-    io::{self, Read, Write},
-};
+use std::fs::File;
+use std::io::{self, prelude::*};
 
 use clap::{Args, Parser};
 
@@ -19,12 +16,12 @@ use merge::*;
 use resolve::*;
 use validate::*;
 
-use crate::Format;
+use crate::{Format, Result};
 
 pub const MODLINKS_DEFAULT_CAPACITY: usize = 160 * 1024 * 1024;
 
 pub trait Run {
-    fn run(self) -> Result<(), Box<dyn Error>>;
+    fn run(self) -> Result;
 }
 
 #[derive(Debug, Clone, Parser)]
@@ -59,7 +56,7 @@ pub struct InArgs {
 }
 
 impl InArgs {
-    fn read(self) -> Result<ModLinks, Box<dyn Error>> {
+    fn read(self) -> Result<ModLinks> {
         let mut buf: Vec<u8> = Vec::with_capacity(MODLINKS_DEFAULT_CAPACITY);
 
         let in_format: Format = match &self.r#in {
@@ -83,7 +80,7 @@ impl InArgs {
         })
     }
 
-    fn read_from(stdin: Option<Format>, r#in: Option<String>) -> Result<ModLinks, Box<dyn Error>> {
+    fn read_from(stdin: Option<Format>, r#in: Option<String>) -> Result<ModLinks> {
         Self { stdin, r#in }.read()
     }
 }
@@ -98,7 +95,7 @@ pub struct OutArgs {
 }
 
 impl OutArgs {
-    fn write(self, mod_links: ModLinks) -> Result<(), Box<dyn Error>> {
+    fn write(self, mod_links: ModLinks) -> Result {
         let (mut writer, out_format): (Box<dyn Write>, _) = match &self.out {
             Some(path) => (Box::new(File::create(path)?), Format::from_file_name(path)?),
             None => (Box::new(io::stdout().lock()), self.stdout.unwrap()),

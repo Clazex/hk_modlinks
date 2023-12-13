@@ -1,10 +1,10 @@
-use std::error::Error;
 use std::fs::File;
 use std::io::Write;
 
 use clap::Args;
 
 use super::{InArgs, Run};
+use crate::Result;
 
 #[derive(Args, Debug, Clone)]
 pub struct Changelog {
@@ -18,7 +18,7 @@ pub struct Changelog {
 }
 
 impl Run for Changelog {
-    fn run(self) -> Result<(), Box<dyn Error>> {
+    fn run(self) -> Result {
         let old_mod_links = InArgs::read_from(None, Some(self.from))?;
         let new_mod_links = InArgs::read_from(None, Some(self.to))?;
 

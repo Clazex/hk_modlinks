@@ -1,8 +1,7 @@
-use std::error::Error;
-
 use clap::Args;
 
 use super::{InArgs, OutArgs, Run};
+use crate::Result;
 
 #[derive(Args, Debug, Clone)]
 pub struct Convert {
@@ -13,7 +12,7 @@ pub struct Convert {
 }
 
 impl Run for Convert {
-    fn run(self) -> Result<(), Box<dyn Error>> {
+    fn run(self) -> Result {
         let mod_links = self.in_args.read()?;
         self.out_args.write(mod_links)
     }

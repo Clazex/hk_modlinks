@@ -1,13 +1,15 @@
 mod cli;
 mod format;
 
-use cli::*;
-pub use format::*;
-
 use std::error::Error;
+
+use cli::*;
+use format::*;
 
 use clap::Parser;
 
-fn main() -> Result<(), Box<dyn Error>> {
+type Result<T = (), E = Box<dyn Error>> = std::result::Result<T, E>;
+
+fn main() -> Result {
     Cli::parse().run()
 }

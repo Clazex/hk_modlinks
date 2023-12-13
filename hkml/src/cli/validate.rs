@@ -3,6 +3,7 @@ use std::error::Error;
 use clap::Args;
 
 use super::{InArgs, Run};
+use crate::Result;
 
 #[derive(Args, Debug, Clone)]
 pub struct Validate {
@@ -11,7 +12,7 @@ pub struct Validate {
 }
 
 impl Run for Validate {
-    fn run(self) -> Result<(), Box<dyn Error>> {
+    fn run(self) -> Result {
         let mod_links = self.in_args.read()?;
 
         if let Err(mut mods) = mod_links.validate_relations() {
