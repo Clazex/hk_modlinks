@@ -28,7 +28,7 @@ lazy_static = { version = "1.4.0", optional = true }
 default = ["safe-name", "xml"]
 safe-name = []
 xml = ["dep:quick-xml"]
-xml-encoding = ["xml", "quick-xml?/encoding"]
+xml-encoding = ["quick-xml?/encoding"]
 convert = []
 toml = ["convert", "dep:toml"]
 json = ["convert", "dep:serde_json"]
