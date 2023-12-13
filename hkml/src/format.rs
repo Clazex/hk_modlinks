@@ -1,6 +1,7 @@
 use std::ffi::OsStr;
+use std::fs;
+use std::io::{self, Error as IoError};
 use std::path::Path;
-use std::{fs, io};
 
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
 pub enum Format {
@@ -32,10 +33,7 @@ impl Format {
             "yml" | "yaml" => Yaml,
             #[cfg(feature = "ron")]
             "ron" => Ron,
-            _ => Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!("Unknown extension: {ext:?}"),
-            ))?,
+            _ => Err(IoError::other(format!("Unknown extension: {ext:?}")))?,
         })
     }
 
