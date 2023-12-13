@@ -1,6 +1,6 @@
 mod changelog;
 mod convert;
-mod merge;
+mod edit;
 mod resolve;
 mod validate;
 
@@ -9,41 +9,60 @@ use std::io::{self, prelude::*};
 
 use clap::{Args, Parser};
 
+use hk_modlinks::ModLinks;
+
 use changelog::*;
 use convert::*;
-use hk_modlinks::ModLinks;
-use merge::*;
+use edit::*;
 use resolve::*;
 use validate::*;
 
 use crate::{Format, Result};
 
-pub const MODLINKS_DEFAULT_CAPACITY: usize = 160 * 1024 * 1024;
+const MODLINKS_DEFAULT_CAPACITY: usize = 160 * 1024 * 1024;
 
 pub trait Run {
     fn run(self) -> Result;
 }
 
+#[macro_export]
+macro_rules! impl_run_inner {
+	($type:ty; $($variant:ident),+) => {
+		impl Run for $type {
+			fn run(self) -> $crate::Result {
+				match self {
+					$(
+						Self::$variant(inner) => inner.run(),
+					)+
+				}
+			}
+		}
+	};
+}
+
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about)]
 pub enum Cli {
+    /// Resolve dependency of given mod(s) in the modlinks
     Resolve(Resolve),
+    /// Convert modlinks between different formats
     Convert(Convert),
-    Merge(Merge),
+    /// Validate mod relationships in the modlinks
     Validate(Validate),
+    /// Generate changelog between two modlinks
     Changelog(Changelog),
+    /// Edit the modlink
+    #[command(subcommand)]
+    Edit(Edit),
 }
 
-impl Run for Cli {
-    fn run(self) -> Result<(), Box<dyn Error>> {
-        match self {
-            Cli::Resolve(resolve) => resolve.run(),
-            Cli::Convert(convert) => convert.run(),
-            Cli::Merge(merge) => merge.run(),
-            Cli::Validate(validate) => validate.run(),
-            Cli::Changelog(changelog) => changelog.run(),
-        }
-    }
+impl_run_inner! {
+    Cli;
+    Resolve,
+    Convert,
+    Validate,
+    Changelog,
+    Edit
 }
 
 #[derive(Debug, Clone, Args)]

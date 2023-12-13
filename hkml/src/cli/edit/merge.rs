@@ -1,10 +1,9 @@
-use std::error::Error;
-
 use clap::Args;
 
 use hk_modlinks::ModLinks;
 
 use super::{InArgs, OutArgs, Run};
+use crate::Result;
 
 #[derive(Args, Debug, Clone)]
 pub struct Merge {
@@ -16,7 +15,7 @@ pub struct Merge {
 }
 
 impl Run for Merge {
-    fn run(self) -> Result<(), Box<dyn Error>> {
+    fn run(self) -> Result {
         let mut mod_links = ModLinks::new();
 
         for file in self.files {
