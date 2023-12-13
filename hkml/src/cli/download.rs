@@ -77,7 +77,7 @@ impl Run for Download {
             Platform::Windows
         });
 
-        if self.unpack || !(self.unpack || self.repack) {
+        if self.unpack || !self.repack {
             fs_extra::dir::create_all(&out, true)?;
         } else {
             fs_extra::dir::create_all(out.parent().unwrap(), false)?;
@@ -100,6 +100,7 @@ impl Run for Download {
             None
         };
 
+        #[allow(clippy::type_complexity)]
         let mut process_fn: Box<dyn FnMut(&str, &FileDef) -> Result> = if self.unpack {
             Box::new(|name, file| {
                 download_to_dir(&agent, file, out.join(name), name)?;
