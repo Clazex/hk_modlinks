@@ -21,7 +21,7 @@ impl Run for Merge {
         let mut mod_links = ModLinks::new();
 
         for file in self.files {
-            for (name, mod_info) in InArgs::read_from(None, Some(file))? {
+            for (name, mod_info) in InArgs::read_from_file(file)? {
                 mod_links.insert(name, mod_info);
             }
         }

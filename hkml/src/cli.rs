@@ -112,8 +112,12 @@ impl InArgs {
         })
     }
 
-    fn read_from(stdin: Option<Format>, r#in: Option<PathBuf>) -> Result<ModLinks> {
-        Self { stdin, r#in }.read()
+    fn read_from_file(path: PathBuf) -> Result<ModLinks> {
+        Self {
+            r#in: Some(path),
+            stdin: None,
+        }
+        .read()
     }
 }
 

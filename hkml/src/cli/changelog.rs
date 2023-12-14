@@ -20,8 +20,8 @@ pub struct Changelog {
 
 impl Run for Changelog {
     fn run(self) -> Result {
-        let old_mod_links = InArgs::read_from(None, Some(self.from))?;
-        let new_mod_links = InArgs::read_from(None, Some(self.to))?;
+        let old_mod_links = InArgs::read_from_file(self.from)?;
+        let new_mod_links = InArgs::read_from_file(self.to)?;
 
         let changelog = new_mod_links
             .changelog_since(&old_mod_links)
