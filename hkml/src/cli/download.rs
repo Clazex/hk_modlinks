@@ -21,6 +21,7 @@ use zip::{write::FileOptions as ZipFileOptions, ZipArchive, ZipWriter};
 
 use hk_modlinks::{FileDef, Links};
 
+use super::resolve::read_mods_from_vec_or_file;
 use super::{InArgs, Run};
 use crate::Result;
 
@@ -38,7 +39,7 @@ pub struct Download {
     /// Mods to be downloaded
     #[arg(required = true, value_name = "MOD", group = "mod")]
     mods: Option<Vec<String>>,
-    /// Read mods to be downloaded from file, in which a mod name is stated each line
+    /// Read mods to be downloaded from file, in which a mod name is stated each line, empty lines are ignored
     #[arg(short = 'f', long = "file", group = "mod")]
     mods_file: Option<PathBuf>,
     /// Output directory or file
@@ -86,13 +87,7 @@ impl Run for Download {
             fs_extra::dir::create_all(out.parent().unwrap(), false)?;
         }
 
-        let mods = match self.mods {
-            Some(mods) => mods,
-            None => fs::read_to_string(self.mods_file.unwrap())?
-                .split('\n')
-                .map(ToString::to_string)
-                .collect_vec(),
-        };
+        let mods = read_mods_from_vec_or_file(self.mods, self.mods_file)?;
 
         let mods = if self.no_deps {
             mods
