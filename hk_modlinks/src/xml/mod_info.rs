@@ -2,9 +2,11 @@ use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
 use super::{Authors, Dependencies, Integrations, Links, Tags};
 
+#[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename = "Manifest", rename_all = "PascalCase")]
 pub struct ModInfo {
@@ -13,17 +15,11 @@ pub struct ModInfo {
     version: String,
     #[serde(flatten)]
     links: Links,
-    #[serde(skip_serializing_if = "Option::is_none")]
     dependencies: Option<Dependencies>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     repository: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     issues: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     integrations: Option<Integrations>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     tags: Option<Tags>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     authors: Option<Authors>,
 }
 

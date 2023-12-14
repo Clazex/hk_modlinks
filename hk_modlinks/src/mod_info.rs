@@ -1,11 +1,13 @@
 use std::collections::BTreeSet;
 
 use derive_builder::Builder;
+
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
 use crate::Links;
 
-#[derive(Debug, Clone, Deserialize, Serialize, Builder)]
+#[skip_serializing_none]
 #[builder(derive(Debug), setter(into, strip_option))]
 pub struct ModInfo {
     #[builder(default)]
@@ -17,11 +19,9 @@ pub struct ModInfo {
     #[builder(default, setter(each(name = "dependency", into)))]
     pub dependencies: BTreeSet<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[builder(default)]
     pub repository: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[builder(default)]
     pub issues: Option<String>,
 
