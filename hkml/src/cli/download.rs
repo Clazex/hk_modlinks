@@ -98,7 +98,7 @@ impl Run for Download {
             mods
         } else {
             mod_links
-                .resolve_dependencies_multi(mods.iter().map(AsRef::as_ref))?
+                .resolve_deps(mods.iter().map(String::as_str))?
                 .into_iter()
                 .map(ToString::to_string)
                 .collect_vec()

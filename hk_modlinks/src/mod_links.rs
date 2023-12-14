@@ -1,5 +1,4 @@
 use std::collections::{btree_map, BTreeMap, BTreeSet};
-use std::iter;
 use std::ops::Index;
 
 use serde::{Deserialize, Serialize};
@@ -98,20 +97,20 @@ impl ModLinks {
         self.0.is_empty()
     }
 
-    pub fn contains_mod(&self, name: &str) -> bool {
-        self.0.contains_key(name)
+    pub fn contains(&self, name: impl AsRef<str>) -> bool {
+        self.0.contains_key(name.as_ref())
     }
 
-    pub fn get(&self, name: &str) -> Option<&ModInfo> {
-        self.0.get(name)
+    pub fn get(&self, name: impl AsRef<str>) -> Option<&ModInfo> {
+        self.0.get(name.as_ref())
     }
 
     pub fn insert(&mut self, name: String, mod_info: ModInfo) -> Option<ModInfo> {
         self.0.insert(name, mod_info)
     }
 
-    pub fn remove(&mut self, name: &str) -> Option<ModInfo> {
-        self.0.remove(name)
+    pub fn remove(&mut self, name: impl AsRef<str>) -> Option<ModInfo> {
+        self.0.remove(name.as_ref())
     }
 
     pub fn entry(&mut self, name: String) -> btree_map::Entry<'_, String, ModInfo> {
@@ -130,35 +129,28 @@ impl ModLinks {
         self.0.iter_mut()
     }
 
-    pub fn resolve_dependencies<'a>(
-        &'a self,
-        mod_name: &'a str,
-    ) -> Result<BTreeSet<&'a str>, String> {
-        self.resolve_dependencies_multi(iter::once(mod_name))
-    }
-
-    pub fn resolve_dependencies_multi<'a>(
+    pub fn resolve_deps<'a>(
         &'a self,
         iter: impl IntoIterator<Item = &'a str>,
     ) -> Result<BTreeSet<&'a str>, String> {
-        let mut mods_to_resolve: BTreeSet<&'a str> = iter.into_iter().collect();
-        let mut resolved_mods: BTreeSet<&'a str> = Default::default();
+        let mut to_resolve: BTreeSet<&'a str> = iter.into_iter().collect();
+        let mut resolved: BTreeSet<&'a str> = Default::default();
 
-        while let Some(name) = mods_to_resolve.pop_first() {
+        while let Some(name) = to_resolve.pop_first() {
             let mod_info = self
                 .get(name)
                 .ok_or_else(|| format!("Unknown mod: {name}"))?;
 
-            if !resolved_mods.insert(name) {
+            if !resolved.insert(name) {
                 continue;
             }
 
             for dep in mod_info.dependencies.iter() {
-                mods_to_resolve.insert(dep);
+                to_resolve.insert(dep);
             }
         }
 
-        Ok(resolved_mods)
+        Ok(resolved)
     }
 
     pub fn validate_relations(&self) -> Result<(), Vec<&str>> {

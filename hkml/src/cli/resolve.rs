@@ -16,7 +16,7 @@ impl Run for Resolve {
     fn run(self) -> Result {
         let mod_links = self.in_args.read()?;
 
-        for i in mod_links.resolve_dependencies_multi(self.mods.iter().map(String::as_str))? {
+        for i in mod_links.resolve_deps(mods.iter().map(String::as_str))? {
             println!("{i}");
         }
 

@@ -58,7 +58,7 @@ impl ModLinksChangelog {
         to_json_value(
             new.iter()
                 .filter_map(|(name, mod_info)| {
-                    if old.contains_mod(name) {
+                    if old.contains(name) {
                         None
                     } else {
                         Some((
@@ -80,13 +80,15 @@ impl ModLinksChangelog {
     fn removed_mods(old: &ModLinks, new: &ModLinks) -> JsonValue {
         to_json_value(
             old.iter()
-                .filter_map(|(name, _)| {
-                    if new.contains_mod(name) {
-                        None
-                    } else {
-                        Some(name)
-                    }
-                })
+                .filter_map(
+                    |(name, _)| {
+                        if new.contains(name) {
+                            None
+                        } else {
+                            Some(name)
+                        }
+                    },
+                )
                 .collect::<Vec<_>>(),
         )
     }
