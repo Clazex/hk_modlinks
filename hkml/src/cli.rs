@@ -22,7 +22,7 @@ use validate::*;
 
 use crate::{Format, Result};
 
-const MODLINKS_DEFAULT_CAPACITY: usize = 160 * 1024 * 1024;
+const MODLINKS_DEFAULT_CAPACITY: usize = 3 * 128 * 1024;
 
 pub trait Run {
     fn run(self) -> Result;
