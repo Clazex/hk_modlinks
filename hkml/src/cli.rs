@@ -74,10 +74,12 @@ impl_run_inner! {
 #[derive(Debug, Clone, Args)]
 #[group(required = true, multiple = false, id = "input")]
 pub struct InArgs {
-    #[arg(long, value_name = "FORMAT")]
-    stdin: Option<Format>,
+    /// Specify path to modlinks file
     #[arg(short, value_name = "FILE")]
     r#in: Option<PathBuf>,
+    /// Specify modlinks format and read from stdin
+    #[arg(long, value_name = "FORMAT")]
+    stdin: Option<Format>,
 }
 
 impl InArgs {
@@ -118,10 +120,12 @@ impl InArgs {
 #[derive(Debug, Clone, Args)]
 #[group(required = true, multiple = false, id = "output")]
 pub struct OutArgs {
-    #[arg(long, value_name = "FORMAT")]
-    stdout: Option<Format>,
+    /// Path to write modlinks file to
     #[arg(short, value_name = "FILE")]
     out: Option<PathBuf>,
+    /// Format of modlinks, writes to stdout
+    #[arg(long, value_name = "FORMAT")]
+    stdout: Option<Format>,
 }
 
 impl OutArgs {

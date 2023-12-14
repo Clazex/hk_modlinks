@@ -35,18 +35,19 @@ lazy_static! {
 pub struct Download {
     #[command(flatten)]
     in_args: InArgs,
-    /// Mods to download
+    /// Mods to be downloaded
     #[arg(required = true, value_name = "MOD", group = "mod")]
     mods: Option<Vec<String>>,
+    /// Read mods to be downloaded from file, in which a mod name is stated each line
     #[arg(short = 'f', long = "file", group = "mod")]
     mods_file: Option<PathBuf>,
     /// Output directory or file
-    #[arg(short, long)]
+    #[arg(short, long, value_name = "FILE|DIR")]
     out: PathBuf,
     /// Do not download dependencies
     #[arg(long)]
     no_deps: bool,
-    /// Specify platform to download for, defaults to local platform
+    /// Platform to download for, defaults to local platform
     #[arg(long)]
     platform: Option<Platform>,
     /// Unpack mod zips into subdirectories, output path should be a directory.
