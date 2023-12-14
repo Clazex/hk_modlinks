@@ -30,13 +30,16 @@ lazy_static! {
 }
 
 #[derive(Args, Debug, Clone)]
-#[group(id = "kind", multiple = false)]
+#[group(id = "operation", multiple = false)]
+#[group(id = "mod", required = true, multiple = false)]
 pub struct Download {
     #[command(flatten)]
     in_args: InArgs,
     /// Mods to download
-    #[arg(required = true, value_name = "MOD")]
-    mods: Vec<String>,
+    #[arg(required = true, value_name = "MOD", group = "mod")]
+    mods: Option<Vec<String>>,
+    #[arg(short = 'f', long = "file", group = "mod")]
+    mods_file: Option<PathBuf>,
     /// Output directory or file
     #[arg(short, long)]
     out: PathBuf,
@@ -47,10 +50,10 @@ pub struct Download {
     #[arg(long)]
     platform: Option<Platform>,
     /// Unpack mod zips into subdirectories, output path should be a directory.
-    #[arg(long, group = "kind")]
+    #[arg(long, group = "operation")]
     unpack: bool,
     /// Repack unpacked mod zips into a single zip file, output path should be a file.
-    #[arg(long, group = "kind")]
+    #[arg(long, group = "operation")]
     repack: bool,
 }
 
@@ -61,37 +64,44 @@ pub enum Platform {
     Linux,
 }
 
+#[cfg(target_os = "windows")]
+const LOCAL_PLATFORM: Platform = Platform::Windows;
+
+#[cfg(target_os = "macos")]
+const LOCAL_PLATFORM: Platform = Platform::Mac;
+
+#[cfg(target_os = "linux")]
+const LOCAL_PLATFORM: Platform = Platform::Linux;
+
 impl Run for Download {
     fn run(self) -> Result {
         let mod_links = self.in_args.read()?;
-        let mut mods = self.mods;
+        let platform = self.platform.unwrap_or(LOCAL_PLATFORM);
+
         let out = self.out;
-
-        let platform = self.platform.unwrap_or(if cfg!(target_os = "windows") {
-            Platform::Windows
-        } else if cfg!(target_os = "macos") {
-            Platform::Mac
-        } else if cfg!(target_os = "linux") {
-            Platform::Linux
-        } else {
-            Platform::Windows
-        });
-
         if self.unpack || !self.repack {
             fs_extra::dir::create_all(&out, true)?;
         } else {
             fs_extra::dir::create_all(out.parent().unwrap(), false)?;
         }
 
-        if !self.no_deps {
-            mods = mod_links
+        let mods = match self.mods {
+            Some(mods) => mods,
+            None => fs::read_to_string(self.mods_file.unwrap())?
+                .split('\n')
+                .map(ToString::to_string)
+                .collect_vec(),
+        };
+
+        let mods = if self.no_deps {
+            mods
+        } else {
+            mod_links
                 .resolve_dependencies_multi(mods.iter().map(AsRef::as_ref))?
                 .into_iter()
                 .map(ToString::to_string)
-                .collect_vec();
-        }
-
-        let mods = mods;
+                .collect_vec()
+        };
 
         let agent = ureq::AgentBuilder::new().build();
         let mut zip = if self.repack {
