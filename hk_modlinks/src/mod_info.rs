@@ -5,14 +5,15 @@ use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::Links;
+use crate::{Links, Version};
 
 #[skip_serializing_none]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Builder)]
 #[builder(derive(Debug), setter(into, strip_option))]
 pub struct ModInfo {
     #[builder(default)]
     pub description: String,
-    pub version: String,
+    pub version: Version,
     pub links: Links,
 
     #[serde(default)]

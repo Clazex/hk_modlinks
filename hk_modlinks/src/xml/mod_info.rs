@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
 use super::{Authors, Dependencies, Integrations, Links, Tags};
+use crate::Version;
 
 #[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -12,7 +13,7 @@ use super::{Authors, Dependencies, Integrations, Links, Tags};
 pub struct ModInfo {
     name: String,
     description: String,
-    version: String,
+    version: Version,
     #[serde(flatten)]
     links: Links,
     dependencies: Option<Dependencies>,

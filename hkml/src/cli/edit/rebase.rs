@@ -4,7 +4,7 @@ use clap::{Args, Subcommand};
 
 use url::Url;
 
-use hk_modlinks::{get_safe_mod_name, FileDef, Links, ModInfo};
+use hk_modlinks::{get_safe_mod_name, FileDef, Links, ModInfo, Version};
 
 use super::{InArgs, OutArgs, Run};
 
@@ -75,11 +75,11 @@ fn replace_fn(from: Url, to: Url) -> RebaseFn {
 fn root_fn(root: Url) -> RebaseFn {
     let root1 = root.clone();
 
-    let uni_edit_fn = move |file: &mut FileDef, name: &str, version: &str| {
+    let uni_edit_fn = move |file: &mut FileDef, name: &str, version: &Version| {
         file.url = root.join(&format!("mods/{name}-v{version}.zip")).unwrap();
     };
 
-    let plat_edit_fn = move |file: &mut FileDef, name: &str, version: &str, platform: &str| {
+    let plat_edit_fn = move |file: &mut FileDef, name: &str, version: &Version, platform: &str| {
         file.url = root1
             .join(&format!("mods/{name}-v{version}-{platform}.zip"))
             .unwrap();

@@ -134,7 +134,7 @@ impl ModLinksChangelog {
 						return None;
 					};
 
-					let ver = Self::gen_old_new(old.version.as_str(), new.version.as_str());
+					let ver = Self::gen_old_new(&old.version.to_string(), &new.version.to_string());
 					if ver.is_null() {
 						return None;
 					}

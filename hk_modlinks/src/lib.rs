@@ -3,6 +3,7 @@ mod file_def;
 mod links;
 mod mod_info;
 mod mod_links;
+mod version;
 
 #[cfg(feature = "safe-name")]
 mod safe_name;
@@ -24,6 +25,7 @@ pub use file_def::*;
 pub use links::*;
 pub use mod_info::*;
 pub use mod_links::*;
+pub use version::*;
 
 #[cfg(feature = "safe-name")]
 pub use safe_name::*;
