@@ -107,16 +107,15 @@ impl Run for Download {
             None
         };
 
-        #[allow(clippy::type_complexity)]
-        let mut process_fn: Box<dyn FnMut(&str, &FileDef) -> Result> = if self.unpack {
-            Box::new(|name, file| {
-                download_to_dir(&agent, file, out.join(name), name)?;
+        let mut process_fn: Box<dyn FnMut(_, _) -> Result> = if self.unpack {
+            Box::new(|name: String, file: &FileDef| {
+                download_to_dir(&agent, file, out.join(&name), name)?;
                 Ok(())
             })
         } else if self.repack {
-            Box::new(|name, file| {
+            Box::new(|name: String, file: &FileDef| {
                 let zip = zip.as_mut().unwrap();
-                zip.add_directory(name, *BEST_COMPRESSION)?;
+                zip.add_directory(&name, *BEST_COMPRESSION)?;
 
                 let (buf, file_name) = download_and_verify(&agent, file)?;
 
@@ -149,7 +148,7 @@ impl Run for Download {
                 Ok(())
             })
         } else {
-            Box::new(|name, file| {
+            Box::new(|name: String, file: &FileDef| {
                 download_to_zip(&agent, file, out.join(format!("{name}.zip")), name)?;
                 Ok(())
             })
@@ -171,7 +170,7 @@ impl Run for Download {
                 },
             };
 
-            process_fn(&name, file)?;
+            process_fn(name, file)?;
         }
 
         drop(process_fn);
