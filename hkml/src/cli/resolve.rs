@@ -17,7 +17,7 @@ pub struct Resolve {
     #[arg(required = true, value_name = "MOD", group = "mod")]
     mods: Option<Vec<String>>,
     /// Read mods to be downloaded from file, in which a mod name is stated each line, empty lines are ignored
-    #[arg(short = 'f', long = "file", group = "mod")]
+    #[arg(short = 'f', long = "file", value_name = "MODS FILE", group = "mod")]
     mods_file: Option<PathBuf>,
 }
 
