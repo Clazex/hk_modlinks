@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::FileDef;
+use crate::{FileDef, Platform};
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "kebab-case")]
@@ -35,6 +35,39 @@ impl Links {
             windows: Box::new(windows),
             mac: Box::new(mac),
             linux: Box::new(linux),
+        }
+    }
+}
+
+#[cfg(any(target_os = "windows", target_os = "mac", target_os = "linux"))]
+impl Links {
+	pub fn file(&self, platform: Option<Platform>) -> &FileDef {
+        match self {
+            Self::Universal(file) => file,
+            Self::PlatformDependent {
+                windows,
+                mac,
+                linux,
+            } => match platform.unwrap_or(Platform::LOCAL) {
+                Platform::Windows => windows,
+                Platform::Mac => mac,
+                Platform::Linux => linux,
+            },
+        }
+    }
+
+    pub fn into_file(self, platform: Option<Platform>) -> FileDef {
+        match self {
+            Self::Universal(file) => file,
+            Self::PlatformDependent {
+                windows,
+                mac,
+                linux,
+            } => *match platform.unwrap_or(Platform::LOCAL) {
+                Platform::Windows => windows,
+                Platform::Mac => mac,
+                Platform::Linux => linux,
+            },
         }
     }
 }

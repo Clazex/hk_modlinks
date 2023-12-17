@@ -19,7 +19,7 @@ use url::Url;
 
 use zip::{write::FileOptions as ZipFileOptions, ZipArchive, ZipWriter};
 
-use hk_modlinks::{FileDef, Links};
+use hk_modlinks::{FileDef, Links, Platform};
 
 use super::resolve::read_mods_from_vec_or_file;
 use super::{InArgs, Run};
@@ -50,7 +50,7 @@ pub struct Download {
     no_deps: bool,
     /// Platform to download for, defaults to local platform
     #[arg(long)]
-    platform: Option<Platform>,
+    platform: Option<PlatformArg>,
     /// Unpack mod zips into subdirectories, output path should be a directory.
     #[arg(long, group = "operation")]
     unpack: bool,
@@ -60,25 +60,26 @@ pub struct Download {
 }
 
 #[derive(Debug, Clone, ValueEnum)]
-pub enum Platform {
+enum PlatformArg {
     Windows,
     Mac,
     Linux,
 }
 
-#[cfg(target_os = "windows")]
-const LOCAL_PLATFORM: Platform = Platform::Windows;
-
-#[cfg(target_os = "macos")]
-const LOCAL_PLATFORM: Platform = Platform::Mac;
-
-#[cfg(target_os = "linux")]
-const LOCAL_PLATFORM: Platform = Platform::Linux;
+impl From<PlatformArg> for Platform {
+    fn from(value: PlatformArg) -> Self {
+        match value {
+            PlatformArg::Windows => Self::Windows,
+            PlatformArg::Mac => Self::Mac,
+            PlatformArg::Linux => Self::Linux,
+        }
+    }
+}
 
 impl Run for Download {
     fn run(self) -> Result {
         let mod_links = self.in_args.read()?;
-        let platform = self.platform.unwrap_or(LOCAL_PLATFORM);
+        let platform = self.platform.map(Into::into).unwrap_or(Platform::LOCAL);
 
         let out = self.out;
         if self.unpack || !self.repack {
