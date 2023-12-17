@@ -40,9 +40,7 @@ impl Run for Resolve {
         let mod_links = self.in_args.read()?;
         let mods = read_mods_from_vec_or_file(self.mods, self.mods_file)?;
 
-        for i in mod_links.resolve_deps(mods.iter().map(String::as_str))? {
-            println!("{i}");
-        }
+		println!("{}", mod_links.resolve_deps(mods.iter().map(String::as_str))?.into_iter().join("\n"));
 
         Ok(())
     }
