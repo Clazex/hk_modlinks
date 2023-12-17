@@ -28,7 +28,7 @@ pub fn read_mods_from_vec_or_file(
     Ok(match mods {
         Some(mods) => mods,
         None => fs::read_to_string(mods_file.unwrap())?
-            .split('\n')
+            .split(['\n', '\r'])
             .filter(|x| !x.is_empty())
             .map(ToString::to_string)
             .collect_vec(),
