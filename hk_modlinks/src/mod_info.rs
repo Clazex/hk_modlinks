@@ -8,6 +8,7 @@ use serde_with::skip_serializing_none;
 use crate::{Links, Version};
 
 #[skip_serializing_none]
+#[serde_with::apply(BTreeSet => #[serde(default, skip_serializing_if = "BTreeSet::is_empty")])]
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Builder)]
 #[serde(rename_all = "kebab-case")]
 #[builder(derive(Debug), setter(into, strip_option))]
@@ -18,6 +19,7 @@ pub struct ModInfo {
     pub version: Version,
     pub links: Links,
 
+    #[serde_with(skip_apply)]
     #[serde(default)]
     #[builder(default, setter(each(name = "dependency", into)))]
     pub dependencies: BTreeSet<String>,
@@ -28,15 +30,12 @@ pub struct ModInfo {
     #[builder(default)]
     pub issues: Option<String>,
 
-    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     #[builder(default, setter(each(name = "integration", into)))]
     pub integrations: BTreeSet<String>,
 
-    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     #[builder(default, setter(each(name = "tag", into)))]
     pub tags: BTreeSet<String>,
 
-    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     #[builder(default, setter(each(name = "author", into)))]
     pub authors: BTreeSet<String>,
 }
