@@ -46,30 +46,44 @@ impl ModInfo {
     }
 
     pub fn into_builder(self) -> ModInfoBuilder {
+        // Destruct first to ensure new fields get updated
+        let Self {
+            display_name,
+            description,
+            version,
+            links,
+            dependencies,
+            repository,
+            issues,
+            integrations,
+            tags,
+            authors,
+        } = self;
+
         let mut builder = Self::builder();
 
-		if let Some(display_name) = self.display_name {
-			builder.display_name(display_name);
-		}
+        if let Some(display_name) = display_name {
+            builder.display_name(display_name);
+        }
 
         builder
-            .description(self.description)
-            .version(self.version)
-            .links(self.links)
-            .dependencies(self.dependencies);
+            .description(description)
+            .version(version)
+            .links(links)
+            .dependencies(dependencies);
 
-        if let Some(repo) = self.repository {
+        if let Some(repo) = repository {
             builder.repository(repo);
         }
 
-        if let Some(issues) = self.issues {
+        if let Some(issues) = issues {
             builder.issues(issues);
         }
 
         builder
-            .integrations(self.integrations)
-            .tags(self.tags)
-            .authors(self.authors);
+            .integrations(integrations)
+            .tags(tags)
+            .authors(authors);
 
         builder
     }
