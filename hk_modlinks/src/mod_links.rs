@@ -1,5 +1,5 @@
-use std::collections::{btree_map, BTreeMap, BTreeSet};
-use std::ops::Index;
+use std::collections::{btree_map, BTreeMap, BTreeSet, HashSet};
+use std::ops::{Index, IndexMut};
 
 use serde::{Deserialize, Serialize};
 
@@ -75,6 +75,12 @@ impl Index<&str> for ModLinks {
     }
 }
 
+impl IndexMut<&str> for ModLinks {
+    fn index_mut(&mut self, index: &str) -> &mut Self::Output {
+        self.0.get_mut(index).expect("no entry found for key")
+    }
+}
+
 impl Extend<(String, ModInfo)> for ModLinks {
     fn extend<T: IntoIterator<Item = (String, ModInfo)>>(&mut self, iter: T) {
         self.0.extend(iter)
@@ -118,6 +124,16 @@ impl ModLinks {
         self.0.get(name.as_ref())
     }
 
+    pub fn get_mut(&mut self, name: impl AsRef<str>) -> Option<&mut ModInfo> {
+        self.0.get_mut(name.as_ref())
+    }
+
+    pub fn get_display_name<'a>(&'a self, name: &'a str) -> Option<&str> {
+        self.0
+            .get(name)
+            .map(|info| info.display_name.as_deref().unwrap_or(name))
+    }
+
     pub fn insert(&mut self, name: String, mod_info: ModInfo) -> Option<ModInfo> {
         self.0.insert(name, mod_info)
     }
@@ -134,6 +150,10 @@ impl ModLinks {
         self.0.keys()
     }
 
+    pub fn into_mod_names(self) -> btree_map::IntoKeys<String, ModInfo> {
+        self.0.into_keys()
+    }
+
     pub fn iter(&self) -> btree_map::Iter<'_, String, ModInfo> {
         self.0.iter()
     }
@@ -145,14 +165,16 @@ impl ModLinks {
     pub fn resolve_deps<'a>(
         &'a self,
         iter: impl IntoIterator<Item = &'a str>,
-    ) -> Result<BTreeSet<&'a str>, String> {
+    ) -> Result<HashSet<&'a str>, Vec<&'a str>> {
         let mut to_resolve: BTreeSet<&'a str> = iter.into_iter().collect();
-        let mut resolved: BTreeSet<&'a str> = Default::default();
+        let mut resolved: HashSet<&'a str> = Default::default();
+        let mut unknown = vec![];
 
         while let Some(name) = to_resolve.pop_first() {
-            let mod_info = self
-                .get(name)
-                .ok_or_else(|| format!("Unknown mod: {name}"))?;
+            let Some(mod_info) = self.get(name) else {
+                unknown.push(name);
+                continue;
+            };
 
             if !resolved.insert(name) {
                 continue;
@@ -163,40 +185,48 @@ impl ModLinks {
             }
         }
 
-        Ok(resolved)
+        if unknown.is_empty() {
+            Ok(resolved)
+        } else {
+            Err(unknown)
+        }
+    }
+
+    pub fn validate_names(&self) -> Result<(), Vec<&str>> {
+        let invalid: Vec<_> = self
+            .mod_names()
+            .filter(|i| !is_valid_mod_name(i))
+            .map(String::as_str)
+            .collect();
+
+        if invalid.is_empty() {
+            Ok(())
+        } else {
+            Err(invalid)
+        }
     }
 
     pub fn validate_relations(&self) -> Result<(), Vec<&str>> {
-        let mut invalid_mods: Vec<&str> = vec![];
-
-        for (name, mod_info) in self.iter() {
-            let mut flag = true;
-
-            for dep in mod_info.dependencies.iter() {
-                if self.get(dep).is_none() {
-                    flag = false;
-                    break;
+        let invalid: Vec<_> = self
+            .iter()
+            .filter_map(|(name, info)| {
+                if info
+                    .dependencies
+                    .iter()
+                    .chain(info.integrations.iter())
+                    .all(|i| self.contains(i))
+                {
+                    Some(name.as_str())
+                } else {
+                    None
                 }
-            }
+            })
+            .collect();
 
-            if flag {
-                for int in mod_info.dependencies.iter() {
-                    if self.get(int).is_none() {
-                        flag = false;
-                        break;
-                    }
-                }
-            }
-
-            if !flag {
-                invalid_mods.push(name.as_str());
-            }
-        }
-
-        if invalid_mods.is_empty() {
+        if invalid.is_empty() {
             Ok(())
         } else {
-            Err(invalid_mods)
+            Err(invalid)
         }
     }
 

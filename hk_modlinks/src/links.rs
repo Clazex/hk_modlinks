@@ -41,7 +41,7 @@ impl Links {
 
 #[cfg(any(target_os = "windows", target_os = "mac", target_os = "linux"))]
 impl Links {
-	pub fn file(&self, platform: Option<Platform>) -> &FileDef {
+    pub fn file(&self, platform: Option<Platform>) -> &FileDef {
         match self {
             Self::Universal(file) => file,
             Self::PlatformDependent {

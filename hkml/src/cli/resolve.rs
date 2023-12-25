@@ -40,7 +40,14 @@ impl Run for Resolve {
         let mod_links = self.in_args.read()?;
         let mods = read_mods_from_vec_or_file(self.mods, self.mods_file)?;
 
-		println!("{}", mod_links.resolve_deps(mods.iter().map(String::as_str))?.into_iter().join("\n"));
+        println!(
+            "{}",
+            mod_links
+                .resolve_deps(mods.iter().map(String::as_str))
+                .map_err(|u| format!("Unknown mods: {}", u.join(", ")))?
+                .into_iter()
+                .join("\n")
+        );
 
         Ok(())
     }

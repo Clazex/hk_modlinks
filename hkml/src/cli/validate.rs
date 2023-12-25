@@ -19,12 +19,16 @@ impl Run for Validate {
     fn run(self) -> Result {
         let mod_links = self.in_args.read()?;
 
-        if let Err(mods) = mod_links.validate_relations() {
-            Err(format!(
-                "The following mods contains non-existant mod in their relations: {}",
-                mods.join(", ")
-            ))?;
-        }
+        mod_links
+            .validate_names()
+            .map_err(|m| format!("The following mod(s) has invalid name: {}", m.join(", ")))?;
+
+        mod_links.validate_relations().map_err(|m| {
+            format!(
+                "The following mod(s) contains non-existant mod in their relations: {}",
+                m.join(", ")
+            )
+        })?;
 
         let agent = ureq::AgentBuilder::new().build();
         for (name, info) in mod_links {

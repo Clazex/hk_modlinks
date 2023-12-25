@@ -94,7 +94,8 @@ impl Run for Download {
             mods
         } else {
             mod_links
-                .resolve_deps(mods.iter().map(String::as_str))?
+                .resolve_deps(mods.iter().map(String::as_str))
+                .map_err(|u| format!("Unknown mods: {}", u.join(", ")))?
                 .into_iter()
                 .map(ToString::to_string)
                 .collect_vec()
