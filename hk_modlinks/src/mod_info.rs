@@ -9,8 +9,10 @@ use crate::{Links, Version};
 
 #[skip_serializing_none]
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Builder)]
+#[serde(rename_all = "kebab-case")]
 #[builder(derive(Debug), setter(into, strip_option))]
 pub struct ModInfo {
+    pub display_name: Option<String>,
     #[builder(default)]
     pub description: String,
     pub version: Version,
@@ -46,6 +48,10 @@ impl ModInfo {
 
     pub fn into_builder(self) -> ModInfoBuilder {
         let mut builder = Self::builder();
+
+		if let Some(display_name) = self.display_name {
+			builder.display_name(display_name);
+		}
 
         builder
             .description(self.description)

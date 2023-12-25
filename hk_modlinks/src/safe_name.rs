@@ -11,8 +11,7 @@
 /// 5. Join the parts together.
 pub fn get_safe_mod_name(name: &str) -> String {
     name.split([
-        '*', '?', ':', '<', '>', '"', '/', '|', '\\', '\t', // Not good for fs path
-        ' ',  // Not good for URI
+        ' ', // Not good for URI
         '[', ']', // Not good for XML CDATA
     ])
     .filter(|s| !s.is_empty())

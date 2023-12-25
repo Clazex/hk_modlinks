@@ -12,6 +12,7 @@ use crate::Version;
 #[serde(rename = "Manifest", rename_all = "PascalCase")]
 pub struct ModInfo {
     name: String,
+    display_name: Option<String>,
     description: String,
     version: Version,
     #[serde(flatten)]
@@ -51,11 +52,10 @@ impl Ord for ModInfo {
 }
 
 impl From<(String, crate::ModInfo)> for ModInfo {
-    fn from(value: (String, crate::ModInfo)) -> Self {
-        let info = value.1;
-
+    fn from((name, info): (String, crate::ModInfo)) -> Self {
         Self {
-            name: value.0,
+            name,
+            display_name: info.display_name,
             description: info.description,
             version: info.version,
             links: info.links.into(),
@@ -74,6 +74,7 @@ impl From<ModInfo> for (String, crate::ModInfo) {
         (
             value.name,
             crate::ModInfo {
+                display_name: value.display_name,
                 description: value.description,
                 version: value.version,
                 links: value.links.into(),
