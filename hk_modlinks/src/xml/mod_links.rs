@@ -1,9 +1,11 @@
 use std::collections::BTreeSet;
 
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
 use super::ModInfo;
 
+#[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ModLinks {
     #[serde(rename = "Manifest")]
