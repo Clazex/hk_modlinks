@@ -5,6 +5,19 @@ use serde::{Deserialize, Serialize};
 
 use crate::ModInfo;
 
+pub fn is_valid_mod_name(name: impl AsRef<str>) -> bool {
+    let mut chars = name.as_ref().chars();
+    // [a-zA-Z][^\\/:*?<>"|]+
+
+    if !matches!(chars.next(), Some('A'..='Z' | 'a'..='z')) {
+        return false;
+    }
+
+    let rest = chars.as_str();
+
+    !rest.is_empty() && !rest.contains(['\\', '/', ':', '*', '?', '<', '>', '"', '|'])
+}
+
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(transparent)]
 pub struct ModLinks(BTreeMap<String, ModInfo>);
