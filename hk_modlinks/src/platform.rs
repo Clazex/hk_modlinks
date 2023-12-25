@@ -3,6 +3,7 @@ use std::fmt::{self, Debug, Display, Formatter};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "clap-enum", derive(clap::ValueEnum))]
 pub enum Platform {
     Windows,
     Mac,

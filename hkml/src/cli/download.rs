@@ -7,7 +7,7 @@ use actix_web::http::header::{
     ContentDisposition, HeaderValue, CONTENT_DISPOSITION, CONTENT_LENGTH,
 };
 
-use clap::{Args, ValueEnum};
+use clap::Args;
 
 use itertools::Itertools;
 
@@ -50,30 +50,13 @@ pub struct Download {
     no_deps: bool,
     /// Platform to download for, defaults to local platform
     #[arg(long)]
-    platform: Option<PlatformArg>,
+    platform: Option<Platform>,
     /// Unpack mod zips into subdirectories, output path should be a directory.
     #[arg(long, group = "operation")]
     unpack: bool,
     /// Repack unpacked mod zips into a single zip file, output path should be a file.
     #[arg(long, group = "operation")]
     repack: bool,
-}
-
-#[derive(Debug, Clone, ValueEnum)]
-enum PlatformArg {
-    Windows,
-    Mac,
-    Linux,
-}
-
-impl From<PlatformArg> for Platform {
-    fn from(value: PlatformArg) -> Self {
-        match value {
-            PlatformArg::Windows => Self::Windows,
-            PlatformArg::Mac => Self::Mac,
-            PlatformArg::Linux => Self::Linux,
-        }
-    }
 }
 
 impl Run for Download {
