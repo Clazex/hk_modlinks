@@ -18,11 +18,11 @@ mod xml;
 #[cfg(feature = "convert")]
 mod convert;
 
-#[cfg(feature = "changelog-template")]
-mod changelog_template;
-
 #[cfg(feature = "changelog")]
 mod mod_links_changelog;
+
+#[cfg(feature = "changelog-template")]
+mod changelog_template;
 
 pub use api_links::*;
 pub use file_def::*;
@@ -42,8 +42,8 @@ pub use xml::{ApiLinks as ApiLinksXmlCompat, ModLinks as ModLinksXmlCompat};
 #[cfg(feature = "convert")]
 pub use convert::*;
 
-#[cfg(feature = "changelog-template")]
-pub use changelog_template::*;
-
 #[cfg(feature = "changelog")]
 pub use mod_links_changelog::*;
+
+#[cfg(feature = "changelog-template")]
+pub use changelog_template::*;
