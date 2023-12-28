@@ -10,7 +10,7 @@ homepage.workspace = true
 repository.workspace = true
 
 [dependencies]
-hk_modlinks = { workspace = true, features = ["clap-enum", "changelog", "changelog-template"] }
+hk_modlinks = { workspace = true, features = ["clap", "changelog", "changelog-template"] }
 
 clap = { version = "4.4.11", features = ["derive"] }
 fs_extra = "1.3.0"
