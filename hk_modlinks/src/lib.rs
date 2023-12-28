@@ -6,6 +6,7 @@ mod links;
 mod mod_info;
 mod mod_links;
 mod platform;
+mod tag;
 mod version;
 
 #[cfg(feature = "safe-name")]
@@ -29,6 +30,7 @@ pub use links::*;
 pub use mod_info::*;
 pub use mod_links::*;
 pub use platform::*;
+pub use tag::*;
 pub use version::*;
 
 #[cfg(feature = "safe-name")]

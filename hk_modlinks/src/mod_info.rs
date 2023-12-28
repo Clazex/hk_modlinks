@@ -7,10 +7,12 @@ use serde_with::skip_serializing_none;
 
 use url::Url;
 
-use crate::{Links, Version};
+use crate::{Links, Tag, Version};
 
 #[skip_serializing_none]
-#[serde_with::apply(BTreeSet => #[serde(default, skip_serializing_if = "BTreeSet::is_empty")])]
+#[serde_with::apply(BTreeSet =>
+	#[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+)]
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Builder)]
 #[serde(rename_all = "kebab-case")]
 #[builder(derive(Debug), setter(into, strip_option))]
@@ -34,7 +36,7 @@ pub struct ModInfo {
     pub integrations: BTreeSet<String>,
 
     #[builder(default, setter(each(name = "tag", into)))]
-    pub tags: BTreeSet<String>,
+    pub tags: BTreeSet<Tag>,
 
     #[builder(default, setter(each(name = "author", into)))]
     pub authors: BTreeSet<String>,
