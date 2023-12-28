@@ -60,7 +60,7 @@ fn replace_fn(from: Url, to: Url) -> RebaseFn {
 
     Box::new(move |_, info: &mut ModInfo| match &mut info.links {
         Links::Universal(universal) => edit_fn(universal),
-        Links::PlatformDependent {
+        Links::PlatformSpecific {
             windows,
             mac,
             linux,
@@ -91,7 +91,7 @@ fn root_fn(root: Url) -> RebaseFn {
 
         match &mut info.links {
             Links::Universal(universal) => uni_edit_fn(universal, name, version),
-            Links::PlatformDependent {
+            Links::PlatformSpecific {
                 windows,
                 mac,
                 linux,

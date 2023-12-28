@@ -59,7 +59,7 @@ impl Run for Mirror {
                             &base_name,
                         )?;
                     }
-                    Links::PlatformDependent {
+                    Links::PlatformSpecific {
                         windows,
                         mac,
                         linux,

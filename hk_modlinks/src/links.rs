@@ -6,7 +6,7 @@ use crate::{FileDef, Platform};
 #[serde(tag = "type", rename_all = "kebab-case")]
 pub enum Links {
     Universal(FileDef),
-    PlatformDependent {
+    PlatformSpecific {
         windows: Box<FileDef>,
         mac: Box<FileDef>,
         linux: Box<FileDef>,
@@ -21,7 +21,7 @@ impl From<FileDef> for Links {
 
 impl From<(FileDef, FileDef, FileDef)> for Links {
     fn from(value: (FileDef, FileDef, FileDef)) -> Self {
-        Self::new_platform_dependent(value.0, value.1, value.2)
+        Self::new_platform_specific(value.0, value.1, value.2)
     }
 }
 
@@ -33,8 +33,8 @@ impl Links {
     }
 
     #[must_use]
-    pub fn new_platform_dependent(windows: FileDef, mac: FileDef, linux: FileDef) -> Self {
-        Self::PlatformDependent {
+    pub fn new_platform_specific(windows: FileDef, mac: FileDef, linux: FileDef) -> Self {
+        Self::PlatformSpecific {
             windows: Box::new(windows),
             mac: Box::new(mac),
             linux: Box::new(linux),
@@ -48,7 +48,7 @@ impl Links {
     pub fn file(&self, platform: Option<Platform>) -> &FileDef {
         match self {
             Self::Universal(file) => file,
-            Self::PlatformDependent {
+            Self::PlatformSpecific {
                 windows,
                 mac,
                 linux,
@@ -64,7 +64,7 @@ impl Links {
     pub fn into_file(self, platform: Option<Platform>) -> FileDef {
         match self {
             Self::Universal(file) => file,
-            Self::PlatformDependent {
+            Self::PlatformSpecific {
                 windows,
                 mac,
                 linux,

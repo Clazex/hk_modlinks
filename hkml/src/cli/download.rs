@@ -143,7 +143,7 @@ impl Run for Download {
 
             let file = match &mod_links.get(&name).unwrap().links {
                 Links::Universal(file) => file,
-                Links::PlatformDependent {
+                Links::PlatformSpecific {
                     windows,
                     mac,
                     linux,

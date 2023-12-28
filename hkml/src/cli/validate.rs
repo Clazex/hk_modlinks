@@ -34,7 +34,7 @@ impl Run for Validate {
         for (name, info) in mod_links {
             match info.links {
                 Links::Universal(file) => verify(&agent, &name, file, None),
-                Links::PlatformDependent {
+                Links::PlatformSpecific {
                     windows,
                     mac,
                     linux,
