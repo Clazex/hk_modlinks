@@ -17,7 +17,7 @@ pub struct FileDef {
 impl Debug for FileDef {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         fmt.debug_struct("FileDef")
-            .field("sha256", &hex::encode_upper(self.sha256))
+            .field("sha256", &self.sha256())
             .field("url", &self.url)
             .finish()
     }
@@ -33,5 +33,11 @@ impl FileDef {
         let mut fd = Self::new([0; 32], url);
         hex::decode_to_slice(sha256, &mut fd.sha256)?;
         Ok(fd)
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn sha256(&self) -> String {
+        hex::encode_upper(self.sha256)
     }
 }
