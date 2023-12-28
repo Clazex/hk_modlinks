@@ -4,6 +4,8 @@ use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
+use url::Url;
+
 use super::{Authors, Dependencies, Integrations, Links, Tags};
 use crate::Version;
 
@@ -18,8 +20,8 @@ pub struct ModInfo {
     #[serde(flatten)]
     links: Links,
     dependencies: Dependencies,
-    repository: String,
-    issues: Option<String>,
+    repository: Url,
+    issues: Option<Url>,
     integrations: Option<Integrations>,
     tags: Option<Tags>,
     authors: Option<Authors>,

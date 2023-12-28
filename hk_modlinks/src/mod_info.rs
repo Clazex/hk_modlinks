@@ -5,6 +5,8 @@ use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
+use url::Url;
+
 use crate::{Links, Version};
 
 #[skip_serializing_none]
@@ -23,10 +25,10 @@ pub struct ModInfo {
     #[builder(default, setter(each(name = "dependency", into)))]
     pub dependencies: BTreeSet<String>,
 
-    pub repository: String,
+    pub repository: Url,
 
     #[builder(default)]
-    pub issues: Option<String>,
+    pub issues: Option<Url>,
 
     #[builder(default, setter(each(name = "integration", into)))]
     pub integrations: BTreeSet<String>,
