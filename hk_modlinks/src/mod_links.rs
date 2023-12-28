@@ -2,12 +2,13 @@ use std::collections::{btree_map, BTreeMap, BTreeSet, HashSet};
 use std::ops::{Index, IndexMut};
 
 use serde::{Deserialize, Serialize};
+use serde_with::rust::maps_duplicate_key_is_error;
 
 use crate::{is_valid_mod_name, ModInfo};
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(transparent)]
-pub struct ModLinks(BTreeMap<String, ModInfo>);
+pub struct ModLinks(#[serde(with = "maps_duplicate_key_is_error")] BTreeMap<String, ModInfo>);
 
 impl From<BTreeMap<String, ModInfo>> for ModLinks {
     fn from(value: BTreeMap<String, ModInfo>) -> Self {

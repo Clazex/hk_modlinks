@@ -1,4 +1,7 @@
+use std::collections::HashSet;
+
 use serde::{Deserialize, Serialize, Serializer};
+use serde_with::rust::sets_duplicate_value_is_error;
 
 use const_format::concatcp;
 
@@ -15,15 +18,19 @@ const SCHEMA_LOCATION: &str = concatcp!(NS, ' ', SCHEMA_URL);
 #[derive(Debug, Clone, Deserialize)]
 pub struct ModLinks {
     #[serde(rename = "Manifest")]
-    mods: Vec<ModInfo>,
+    mods: HashSet<ModInfo>,
 }
 
 #[must_use]
 #[derive(Debug, Clone, Copy, Serialize)]
 #[serde(rename = "ModLinks")]
 struct ModLinksWithExtraAttrs<'a> {
-    #[serde(rename = "Manifest", skip_serializing_if = "Vec::is_empty")]
-    mods: &'a Vec<ModInfo>,
+    #[serde(
+        rename = "Manifest",
+        skip_serializing_if = "HashSet::is_empty",
+        with = "sets_duplicate_value_is_error"
+    )]
+    mods: &'a HashSet<ModInfo>,
     #[serde(rename = "@xmlns")]
     xml_ns: &'static str,
     #[serde(rename = "@xmlns:xsd")]
