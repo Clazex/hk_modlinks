@@ -20,12 +20,10 @@ pub struct ModInfo {
     pub links: Links,
 
     #[serde_with(skip_apply)]
-    #[serde(default)]
     #[builder(default, setter(each(name = "dependency", into)))]
     pub dependencies: BTreeSet<String>,
 
-    #[builder(default)]
-    pub repository: Option<String>,
+    pub repository: String,
 
     #[builder(default)]
     pub issues: Option<String>,
@@ -73,11 +71,8 @@ impl ModInfo {
             .description(description)
             .version(version)
             .links(links)
-            .dependencies(dependencies);
-
-        if let Some(repo) = repository {
-            builder.repository(repo);
-        }
+            .dependencies(dependencies)
+            .repository(repository);
 
         if let Some(issues) = issues {
             builder.issues(issues);

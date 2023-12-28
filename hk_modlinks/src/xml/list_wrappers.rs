@@ -45,7 +45,7 @@ macro_rules! list_wrapper {
 }
 
 list_wrapper!(Authors, "Author", optional);
-list_wrapper!(Dependencies, "Dependency", optional);
+list_wrapper!(Dependencies, "Dependency");
 list_wrapper!(Integrations, "Integration", optional);
 list_wrapper!(Tags, "Tag", optional);
 list_wrapper!(FileList, "File");
