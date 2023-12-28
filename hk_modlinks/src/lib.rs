@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 mod api_links;
 mod file_def;
 mod links;
