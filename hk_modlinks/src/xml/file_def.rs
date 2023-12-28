@@ -1,16 +1,15 @@
 use std::fmt::{self, Debug};
 
 use serde::{Deserialize, Serialize};
+use serde_with::{formats::Uppercase, hex::Hex, serde_as};
 
 use url::Url;
 
+#[serde_as]
 #[derive(Clone, Deserialize, Serialize)]
 pub struct FileDef {
-    #[serde(
-        rename = "@SHA256",
-        deserialize_with = "hex::deserialize",
-        serialize_with = "hex::serialize_upper"
-    )]
+    #[serde(rename = "@SHA256")]
+    #[serde_as(as = "Hex<Uppercase>")]
     sha256: [u8; 32],
     #[serde(rename = "$text")]
     url: Url,
