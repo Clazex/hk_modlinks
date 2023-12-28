@@ -3,15 +3,16 @@ use std::collections::BTreeSet;
 use derive_builder::Builder;
 
 use serde::{Deserialize, Serialize};
-use serde_with::skip_serializing_none;
+use serde_with::{rust::unwrap_or_skip, skip_serializing_none};
 
 use url::Url;
 
 use crate::{Links, Tag, Version};
 
 #[skip_serializing_none]
-#[serde_with::apply(BTreeSet =>
-	#[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+#[serde_with::apply(
+	BTreeSet => #[serde(default, skip_serializing_if = "BTreeSet::is_empty")],
+	Option => #[serde(default, with = "unwrap_or_skip")]
 )]
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Builder)]
 #[serde(rename_all = "kebab-case")]
