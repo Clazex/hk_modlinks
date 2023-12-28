@@ -33,9 +33,6 @@ pub use version::*;
 #[cfg(feature = "xml")]
 pub use xml::{ApiLinks as ApiLinksXmlCompat, ModLinks as ModLinksXmlCompat};
 
-#[cfg(feature = "convert")]
-pub use convert::*;
-
 #[cfg(feature = "changelog")]
 pub use mod_links_changelog::*;
 
