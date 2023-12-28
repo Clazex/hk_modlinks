@@ -1,6 +1,7 @@
 {
 	"cSpell.words": [
 		"actix",
+		"concatcp",
 		"hkml",
 		"itertools",
 		"ureq"
