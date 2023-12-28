@@ -11,6 +11,7 @@ pub struct ModLinksChangelog {
 }
 
 impl ModLinksChangelog {
+    #[must_use]
     pub(crate) fn new(old: &ModLinks, new: &ModLinks) -> Self {
         Self {
             ctx: json!({
@@ -21,12 +22,15 @@ impl ModLinksChangelog {
         }
     }
 
+    #[inline]
+    #[must_use]
     pub fn json(&self) -> &JsonValue {
         &self.ctx
     }
 }
 
 impl From<ModLinksChangelog> for JsonValue {
+    #[inline]
     fn from(value: ModLinksChangelog) -> Self {
         value.ctx
     }

@@ -24,12 +24,14 @@ lazy_static! {
 }
 
 impl ModLinksChangelog {
+    #[inline]
     pub fn to_markdown(&self) -> Result<String, RenderError> {
         HANDLEBARS_INSTANCE.render(MARKDOWN_TEMPLATE_NAME, self.json())
     }
 }
 
 impl From<ModLinksChangelog> for Context {
+    #[inline]
     fn from(value: ModLinksChangelog) -> Self {
         value.ctx.into()
     }

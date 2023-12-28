@@ -39,6 +39,8 @@ impl From<ModLinks> for crate::ModLinks {
 }
 
 impl ModLinks {
+    #[inline]
+    #[must_use]
     pub fn into_general(self) -> crate::ModLinks {
         self.into()
     }
@@ -58,10 +60,12 @@ impl ModLinks {
         self.serialize(serializer)
     }
 
+    #[inline]
     pub fn from_xml(s: &str) -> Result<Self, quick_xml::DeError> {
         quick_xml::de::from_str(s)
     }
 
+    #[inline]
     pub fn from_xml_reader<R: std::io::BufRead>(reader: R) -> Result<Self, quick_xml::DeError> {
         quick_xml::de::from_reader(reader)
     }

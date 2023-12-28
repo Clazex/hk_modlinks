@@ -24,6 +24,7 @@ impl Debug for FileDef {
 }
 
 impl FileDef {
+    #[must_use]
     pub fn new(sha256: [u8; 32], url: Url) -> Self {
         Self { sha256, url }
     }

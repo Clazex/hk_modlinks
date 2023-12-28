@@ -26,12 +26,14 @@ pub struct ModInfo {
 }
 
 impl Hash for ModInfo {
+    #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.name.hash(state);
     }
 }
 
 impl PartialEq for ModInfo {
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name
     }
@@ -40,12 +42,14 @@ impl PartialEq for ModInfo {
 impl Eq for ModInfo {}
 
 impl PartialOrd for ModInfo {
+    #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl Ord for ModInfo {
+    #[inline]
     fn cmp(&self, other: &Self) -> Ordering {
         self.name.cmp(&other.name)
     }

@@ -26,10 +26,13 @@ impl From<(FileDef, FileDef, FileDef)> for Links {
 }
 
 impl Links {
+    #[inline]
+    #[must_use]
     pub fn new_universal(file_def: FileDef) -> Self {
         Self::Universal(file_def)
     }
 
+    #[must_use]
     pub fn new_platform_dependent(windows: FileDef, mac: FileDef, linux: FileDef) -> Self {
         Self::PlatformDependent {
             windows: Box::new(windows),
@@ -41,6 +44,7 @@ impl Links {
 
 #[cfg(any(target_os = "windows", target_os = "mac", target_os = "linux"))]
 impl Links {
+    #[must_use]
     pub fn file(&self, platform: Option<Platform>) -> &FileDef {
         match self {
             Self::Universal(file) => file,
@@ -56,6 +60,7 @@ impl Links {
         }
     }
 
+    #[must_use]
     pub fn into_file(self, platform: Option<Platform>) -> FileDef {
         match self {
             Self::Universal(file) => file,

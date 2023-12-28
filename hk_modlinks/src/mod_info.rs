@@ -41,10 +41,13 @@ pub struct ModInfo {
 }
 
 impl ModInfo {
+    #[inline]
+    #[must_use]
     pub fn builder() -> ModInfoBuilder {
         ModInfoBuilder::create_empty()
     }
 
+    #[must_use]
     pub fn into_builder(self) -> ModInfoBuilder {
         // Destruct first to ensure new fields get updated
         let Self {
@@ -90,6 +93,7 @@ impl ModInfo {
 }
 
 impl From<ModInfo> for ModInfoBuilder {
+    #[inline]
     fn from(value: ModInfo) -> Self {
         value.into_builder()
     }

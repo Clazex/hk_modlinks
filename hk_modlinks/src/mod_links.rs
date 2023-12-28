@@ -88,30 +88,37 @@ impl Extend<(String, ModInfo)> for ModLinks {
 }
 
 impl ModLinks {
+    #[must_use]
     pub fn new() -> Self {
         Default::default()
     }
 
+    #[must_use]
     pub fn new_from_map(mods: BTreeMap<String, ModInfo>) -> Self {
         Self(mods)
     }
 
+    #[must_use]
     pub fn inner(&self) -> &BTreeMap<String, ModInfo> {
         &self.0
     }
 
+    #[must_use]
     pub fn inner_mut(&mut self) -> &mut BTreeMap<String, ModInfo> {
         &mut self.0
     }
 
+    #[must_use]
     pub fn into_inner(self) -> BTreeMap<String, ModInfo> {
         self.0
     }
 
+    #[must_use]
     pub fn len(&self) -> usize {
         self.0.len()
     }
 
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
@@ -237,22 +244,28 @@ impl ModLinks {
 
 #[cfg(feature = "xml")]
 impl ModLinks {
+    #[inline]
+    #[must_use]
     pub fn into_xml_compat(self) -> crate::ModLinksXmlCompat {
         self.into()
     }
 
+    #[inline]
     pub fn into_xml(self) -> Result<String, quick_xml::DeError> {
         self.into_xml_compat().to_xml()
     }
 
+    #[inline]
     pub fn into_xml_writer<W: std::fmt::Write>(self, writer: W) -> Result<(), quick_xml::DeError> {
         self.into_xml_compat().to_xml_writer(writer)
     }
 
+    #[inline]
     pub fn from_xml(s: &str) -> Result<Self, quick_xml::DeError> {
         crate::ModLinksXmlCompat::from_xml(s).map(Into::into)
     }
 
+    #[inline]
     pub fn from_xml_reader<R: std::io::BufRead>(reader: R) -> Result<Self, quick_xml::DeError> {
         crate::ModLinksXmlCompat::from_xml_reader(reader).map(Into::into)
     }
@@ -260,10 +273,14 @@ impl ModLinks {
 
 #[cfg(feature = "changelog")]
 impl ModLinks {
+    #[inline]
+    #[must_use]
     pub fn changelog_since<'a>(&'a self, old: &'a Self) -> crate::ModLinksChangelog {
         crate::ModLinksChangelog::new(old, self)
     }
 
+    #[inline]
+    #[must_use]
     pub fn changelog_until<'a>(&'a self, new: &'a Self) -> crate::ModLinksChangelog {
         new.changelog_since(self)
     }

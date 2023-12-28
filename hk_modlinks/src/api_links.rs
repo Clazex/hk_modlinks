@@ -13,6 +13,8 @@ pub struct ApiLinks {
 
 #[cfg(feature = "xml")]
 impl ApiLinks {
+    #[inline]
+    #[must_use]
     pub fn into_xml_compat(self) -> crate::ApiLinksXmlCompat {
         self.into()
     }

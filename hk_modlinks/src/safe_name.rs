@@ -9,6 +9,7 @@
 /// 2. Remove all characters that are neither ascii-alphanumeric nor `.`, `-`, `_`;
 /// 4. Make first character in each part uppercase;
 /// 5. Join the parts together.
+#[must_use]
 pub fn get_safe_mod_name(name: &str) -> String {
     name.split([
         ' ', // Not good for URI

@@ -11,6 +11,7 @@ pub enum Platform {
 }
 
 impl Display for Platform {
+    #[inline]
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         <Self as Debug>::fmt(self, fmt)
     }

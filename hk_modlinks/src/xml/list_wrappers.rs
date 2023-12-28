@@ -11,10 +11,14 @@ macro_rules! list_wrapper {
         }
 
         impl $type {
+            #[inline]
+            #[must_use]
             pub fn new(inner: BTreeSet<String>) -> Self {
                 Self { inner }
             }
 
+            #[inline]
+            #[must_use]
             pub fn into_inner(self) -> BTreeSet<String> {
                 self.inner
             }
@@ -24,6 +28,7 @@ macro_rules! list_wrapper {
         list_wrapper!($type, $inner);
 
         impl $type {
+            #[must_use]
             pub fn wrap(list: BTreeSet<String>) -> Option<Self> {
                 match list.len() {
                     0 => None,
@@ -31,6 +36,7 @@ macro_rules! list_wrapper {
                 }
             }
 
+            #[must_use]
             pub fn unwrap(list: Option<Self>) -> BTreeSet<String> {
                 list.map_or_else(Default::default, |x| x.into_inner())
             }

@@ -32,22 +32,28 @@ impl From<ApiLinks> for crate::ApiLinks {
 }
 
 impl ApiLinks {
+    #[inline]
+    #[must_use]
     pub fn into_general(self) -> crate::ApiLinks {
         self.into()
     }
 
+    #[inline]
     pub fn to_xml(&self) -> Result<String, quick_xml::DeError> {
         quick_xml::se::to_string(&self)
     }
 
+    #[inline]
     pub fn to_xml_writer<W: std::fmt::Write>(&self, writer: W) -> Result<(), quick_xml::DeError> {
         quick_xml::se::to_writer(writer, &self)
     }
 
+    #[inline]
     pub fn from_xml(s: &str) -> Result<Self, quick_xml::DeError> {
         quick_xml::de::from_str(s)
     }
 
+    #[inline]
     pub fn from_xml_reader<R: std::io::BufRead>(reader: R) -> Result<Self, quick_xml::DeError> {
         quick_xml::de::from_reader(reader)
     }

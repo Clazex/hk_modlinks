@@ -9,7 +9,7 @@ use thiserror::Error;
 type N = u16;
 
 #[derive(
-    Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, DeserializeFromStr, SerializeDisplay,
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, DeserializeFromStr, SerializeDisplay,
 )]
 pub struct Version(N, N, N, N);
 
@@ -34,10 +34,13 @@ impl FromStr for Version {
 }
 
 impl Version {
+    #[inline]
+    #[must_use]
     pub fn new(n1: N, n2: N, n3: N, n4: N) -> Self {
         Self(n1, n2, n3, n4)
     }
 
+    #[inline]
     pub fn new_from_str(str: impl AsRef<str>) -> Result<Self, ParseVersionError> {
         Self::from_str(str.as_ref())
     }
