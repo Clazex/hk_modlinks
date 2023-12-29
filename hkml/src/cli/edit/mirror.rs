@@ -95,7 +95,7 @@ impl Run for Mirror {
             })?;
 
         println!("Writing new ModLinks.xml");
-        fs::write(base_dir.join("ModLinks.xml"), mod_links.into_xml()?)?;
+        fs::write(base_dir.join("ModLinks.xml"), mod_links.to_xml()?)?;
 
         Ok(())
     }

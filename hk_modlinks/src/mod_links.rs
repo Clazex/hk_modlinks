@@ -234,28 +234,31 @@ impl ModLinks {
 impl ModLinks {
     #[inline]
     #[must_use]
-    pub fn into_xml_compat(self) -> crate::ModLinksXmlCompat {
+    fn xml(&self) -> crate::xml::ModLinks<'_> {
         self.into()
     }
 
     #[inline]
-    pub fn into_xml(self) -> Result<String, quick_xml::DeError> {
-        self.into_xml_compat().to_xml()
+    pub fn to_xml(self) -> Result<String, quick_xml::DeError> {
+        self.xml().to_xml()
     }
 
     #[inline]
-    pub fn into_xml_writer<W: std::fmt::Write>(self, writer: W) -> Result<(), quick_xml::DeError> {
-        self.into_xml_compat().to_xml_writer(writer)
+    pub fn to_xml_writer<W: std::fmt::Write>(
+        self,
+        writer: &mut W,
+    ) -> Result<(), quick_xml::DeError> {
+        self.xml().to_xml_writer(writer)
     }
 
     #[inline]
     pub fn from_xml(s: &str) -> Result<Self, quick_xml::DeError> {
-        crate::ModLinksXmlCompat::from_xml(s).map(Into::into)
+        crate::xml::ModLinks::from_xml(s).map(Into::into)
     }
 
     #[inline]
     pub fn from_xml_reader<R: std::io::BufRead>(reader: R) -> Result<Self, quick_xml::DeError> {
-        crate::ModLinksXmlCompat::from_xml_reader(reader).map(Into::into)
+        crate::xml::ModLinks::from_xml_reader(reader).map(Into::into)
     }
 }
 

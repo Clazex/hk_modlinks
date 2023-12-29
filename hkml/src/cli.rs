@@ -141,7 +141,7 @@ impl OutArgs {
 
         match out_format {
             #[cfg(feature = "xml")]
-            Format::Xml => writer.write_all(mod_links.into_xml()?.as_bytes())?,
+            Format::Xml => writer.write_all(mod_links.to_xml()?.as_bytes())?,
             #[cfg(feature = "json")]
             Format::Json => mod_links.to_json_writer(writer)?,
             #[cfg(feature = "toml")]

@@ -1,109 +1,64 @@
 use std::collections::HashSet;
 
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
 use serde_with::rust::sets_duplicate_value_is_error;
 
 use const_format::concatcp;
 
-use super::ModInfo;
+use super::{ModInfo, MODLINKS_SCHEMA_URL, NAMESPACE, XSD, XSI};
 
-const XSD: &str = "http://www.w3.org/2001/XMLSchema";
-const XSI: &str = "http://www.w3.org/2001/XMLSchema-instance";
-const NS: &str = "https://github.com/HollowKnight-Modding\
-	/HollowKnight.ModLinks/HollowKnight.ModManager";
-const SCHEMA_URL: &str = "https://raw.githubusercontent.com/\
-	HollowKnight-Modding/HollowKnight.ModLinks/main/Schemas/ModLinks.xml";
-const SCHEMA_LOCATION: &str = concatcp!(NS, ' ', SCHEMA_URL);
+const ATTRS: &[(&str, &str)] = &[
+    ("@xmlns", NAMESPACE),
+    ("@xmlns:xsd", XSD),
+    ("@xmlns:xsi", XSI),
+    (
+        "@xsi:schemaLocation",
+        concatcp!(NAMESPACE, ' ', MODLINKS_SCHEMA_URL),
+    ),
+];
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct ModLinks {
-    #[serde(rename = "Manifest")]
-    mods: HashSet<ModInfo>,
-}
-
-#[must_use]
-#[derive(Debug, Clone, Copy, Serialize)]
-#[serde(rename = "ModLinks")]
-struct ModLinksWithExtraAttrs<'a> {
+pub struct ModLinks<'a> {
     #[serde(
         rename = "Manifest",
-        skip_serializing_if = "HashSet::is_empty",
-        with = "sets_duplicate_value_is_error"
+        deserialize_with = "sets_duplicate_value_is_error::deserialize"
     )]
-    mods: &'a HashSet<ModInfo>,
-    #[serde(rename = "@xmlns")]
-    xml_ns: &'static str,
-    #[serde(rename = "@xmlns:xsd")]
-    xml_ns_xsd: &'static str,
-    #[serde(rename = "@xmlns:xsi")]
-    xml_ns_xsi: &'static str,
-    #[serde(rename = "@xsi:schemaLocation")]
-    xsi_schema_location: &'static str,
+    mods: HashSet<ModInfo<'a>>,
 }
 
-impl From<crate::ModLinks> for ModLinks {
-    fn from(value: crate::ModLinks) -> Self {
+impl<'a> From<ModLinks<'a>> for crate::ModLinks {
+    #[inline]
+    fn from(value: ModLinks<'a>) -> Self {
+        value.mods.into_iter().map(Into::into).collect()
+    }
+}
+
+impl<'a> From<&'a crate::ModLinks> for ModLinks<'a> {
+    #[inline]
+    fn from(value: &'a crate::ModLinks) -> Self {
         Self {
-            mods: value.into_inner().into_iter().map(Into::into).collect(),
+            mods: value.into_iter().map(Into::into).collect(),
         }
     }
 }
 
-impl From<ModLinks> for crate::ModLinks {
-    fn from(value: ModLinks) -> Self {
-        Self::new_from_map(value.mods.into_iter().map(Into::into).collect())
-    }
-}
-
-impl Serialize for ModLinks {
-    #[inline]
+impl<'a> Serialize for ModLinks<'a> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        ModLinksWithExtraAttrs::from(self).serialize(serializer)
-    }
-}
+        let empty = self.mods.is_empty();
 
-impl ModLinks {
-    #[inline]
-    #[must_use]
-    pub fn into_general(self) -> crate::ModLinks {
-        self.into()
-    }
+        let mut ser =
+            serializer.serialize_struct("ModLinks", ATTRS.len() + if empty { 0 } else { 1 })?;
 
-    pub fn to_xml(&self) -> Result<String, quick_xml::DeError> {
-        let mut string = String::new();
-        self.to_xml_writer(&mut string)?;
-        Ok(string)
-    }
-
-    pub fn to_xml_writer<W: std::fmt::Write>(
-        &self,
-        mut writer: W,
-    ) -> Result<(), quick_xml::DeError> {
-        let mut serializer = quick_xml::se::Serializer::new(&mut writer);
-        serializer.indent('\t', 1);
-        self.serialize(serializer)
-    }
-
-    #[inline]
-    pub fn from_xml(s: &str) -> Result<Self, quick_xml::DeError> {
-        quick_xml::de::from_str(s)
-    }
-
-    #[inline]
-    pub fn from_xml_reader<R: std::io::BufRead>(reader: R) -> Result<Self, quick_xml::DeError> {
-        quick_xml::de::from_reader(reader)
-    }
-}
-
-impl<'a> From<&'a ModLinks> for ModLinksWithExtraAttrs<'a> {
-    #[inline]
-    fn from(value: &'a ModLinks) -> Self {
-        Self {
-            mods: &value.mods,
-            xml_ns: NS,
-            xml_ns_xsd: XSD,
-            xml_ns_xsi: XSI,
-            xsi_schema_location: SCHEMA_LOCATION,
+        if empty {
+            ser.skip_field("Manifest")?;
+        } else {
+            ser.serialize_field("Manifest", &self.mods)?;
         }
+
+        for (key, value) in ATTRS {
+            ser.serialize_field(key, value)?;
+        }
+
+        ser.end()
     }
 }

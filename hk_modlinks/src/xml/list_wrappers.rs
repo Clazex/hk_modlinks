@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::BTreeSet;
 
 use serde::{Deserialize, Serialize};
@@ -5,49 +6,40 @@ use serde::{Deserialize, Serialize};
 use crate::Tag;
 
 macro_rules! list_wrapper {
-    ($type:ident, $item:ty, $inner:literal) => {
-        #[derive(Debug, Clone, Deserialize, Serialize)]
-        pub struct $type {
-            #[serde(default, rename = $inner)]
-            inner: BTreeSet<$item>,
+    ($name:ident, $type:ty, $item:literal) => {
+        #[derive(Debug, Clone, Default, Deserialize, Serialize)]
+        pub struct $name<'a> {
+            #[serde(default, rename = $item)]
+            value: Cow<'a, BTreeSet<$type>>,
         }
 
-        impl $type {
+        impl<'a> From<$name<'a>> for BTreeSet<$type> {
             #[inline]
-            #[must_use]
-            pub fn new(inner: BTreeSet<$item>) -> Self {
-                Self { inner }
-            }
-
-            #[inline]
-            #[must_use]
-            pub fn into_inner(self) -> BTreeSet<$item> {
-                self.inner
+            fn from(value: $name<'a>) -> Self {
+                value.value.into_owned()
             }
         }
-    };
-    ($type:ident, $item:ty, $inner:literal, optional) => {
-        list_wrapper!($type, $item, $inner);
 
-        impl $type {
-            #[must_use]
-            pub fn wrap(list: BTreeSet<$item>) -> Option<Self> {
-                match list.len() {
-                    0 => None,
-                    _ => Some(Self::new(list)),
+        impl<'a> From<&'a BTreeSet<$type>> for $name<'a> {
+            #[inline]
+            fn from(value: &'a BTreeSet<$type>) -> Self {
+                Self {
+                    value: Cow::Borrowed(value),
                 }
             }
+        }
 
-            #[must_use]
-            pub fn unwrap(list: Option<Self>) -> BTreeSet<$item> {
-                list.map_or_else(Default::default, |x| x.into_inner())
+        impl<'a> $name<'a> {
+            #[inline]
+            pub fn is_empty(&self) -> bool {
+                self.value.is_empty()
             }
         }
     };
 }
 
-list_wrapper!(Authors, String, "Author", optional);
+list_wrapper!(Authors, String, "Author");
 list_wrapper!(Dependencies, String, "Dependency");
-list_wrapper!(Integrations, String, "Integration", optional);
-list_wrapper!(Tags, Tag, "Tag", optional);
+list_wrapper!(Integrations, String, "Integration");
+list_wrapper!(Tags, Tag, "Tag");
 list_wrapper!(FileList, String, "File");

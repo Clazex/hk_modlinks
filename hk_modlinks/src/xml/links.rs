@@ -3,25 +3,22 @@ use serde::{Deserialize, Serialize};
 use super::FileDef;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub enum Links {
+pub enum Links<'a> {
     #[serde(rename = "Link")]
-    Universal(FileDef),
-    #[serde(rename = "Links")]
+    Universal(FileDef<'a>),
+    #[serde(rename = "Links", rename_all = "PascalCase")]
     PlatformSpecific {
-        #[serde(rename = "Windows")]
-        windows: Box<FileDef>,
-        #[serde(rename = "Mac")]
-        mac: Box<FileDef>,
-        #[serde(rename = "Linux")]
-        linux: Box<FileDef>,
+        windows: Box<FileDef<'a>>,
+        mac: Box<FileDef<'a>>,
+        linux: Box<FileDef<'a>>,
     },
 }
 
-impl From<crate::Links> for Links {
-    fn from(value: crate::Links) -> Self {
+impl<'a> From<Links<'a>> for crate::Links {
+    fn from(value: Links<'a>) -> Self {
         match value {
-            crate::Links::Universal(file_def) => Self::Universal(file_def.into()),
-            crate::Links::PlatformSpecific {
+            Links::Universal(file) => Self::Universal(file.into()),
+            Links::PlatformSpecific {
                 windows,
                 mac,
                 linux,
@@ -34,18 +31,18 @@ impl From<crate::Links> for Links {
     }
 }
 
-impl From<Links> for crate::Links {
-    fn from(value: Links) -> Self {
+impl<'a> From<&'a crate::Links> for Links<'a> {
+    fn from(value: &'a crate::Links) -> Self {
         match value {
-            Links::Universal(file_def) => Self::Universal(file_def.into()),
-            Links::PlatformSpecific {
+            crate::Links::Universal(file) => Self::Universal(file.into()),
+            crate::Links::PlatformSpecific {
                 windows,
                 mac,
                 linux,
             } => Self::PlatformSpecific {
-                windows: Box::new((*windows).into()),
-                mac: Box::new((*mac).into()),
-                linux: Box::new((*linux).into()),
+                windows: Box::new(windows.as_ref().into()),
+                mac: Box::new(mac.as_ref().into()),
+                linux: Box::new(linux.as_ref().into()),
             },
         }
     }

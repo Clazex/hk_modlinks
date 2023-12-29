@@ -1,60 +1,35 @@
+use std::borrow::Cow;
+
 use serde::{Deserialize, Serialize};
 
 use super::{FileList, Links};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct ApiLinks {
-    version: String,
+pub struct ApiLinks<'a> {
+    version: Cow<'a, String>,
     #[serde(flatten)]
-    links: Links,
-    files: FileList,
+    links: Links<'a>,
+    files: FileList<'a>,
 }
 
-impl From<crate::ApiLinks> for ApiLinks {
-    fn from(value: crate::ApiLinks) -> Self {
+impl<'a> From<ApiLinks<'a>> for crate::ApiLinks {
+    fn from(value: ApiLinks<'a>) -> Self {
         Self {
-            version: value.version,
+            version: value.version.into_owned(),
             links: value.links.into(),
-            files: FileList::new(value.files),
+            files: value.files.into(),
         }
     }
 }
 
-impl From<ApiLinks> for crate::ApiLinks {
-    fn from(value: ApiLinks) -> Self {
+impl<'a> From<&'a crate::ApiLinks> for ApiLinks<'a> {
+    #[inline]
+    fn from(value: &'a crate::ApiLinks) -> Self {
         Self {
-            version: value.version,
-            links: value.links.into(),
-            files: value.files.into_inner(),
+            version: Cow::Borrowed(&value.version),
+            links: (&value.links).into(),
+            files: (&value.files).into(),
         }
-    }
-}
-
-impl ApiLinks {
-    #[inline]
-    #[must_use]
-    pub fn into_general(self) -> crate::ApiLinks {
-        self.into()
-    }
-
-    #[inline]
-    pub fn to_xml(&self) -> Result<String, quick_xml::DeError> {
-        quick_xml::se::to_string(&self)
-    }
-
-    #[inline]
-    pub fn to_xml_writer<W: std::fmt::Write>(&self, writer: W) -> Result<(), quick_xml::DeError> {
-        quick_xml::se::to_writer(writer, &self)
-    }
-
-    #[inline]
-    pub fn from_xml(s: &str) -> Result<Self, quick_xml::DeError> {
-        quick_xml::de::from_str(s)
-    }
-
-    #[inline]
-    pub fn from_xml_reader<R: std::io::BufRead>(reader: R) -> Result<Self, quick_xml::DeError> {
-        quick_xml::de::from_reader(reader)
     }
 }

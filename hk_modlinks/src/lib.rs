@@ -30,9 +30,6 @@ pub use platform::*;
 pub use tag::*;
 pub use version::*;
 
-#[cfg(feature = "xml")]
-pub use xml::{ApiLinks as ApiLinksXmlCompat, ModLinks as ModLinksXmlCompat};
-
 #[cfg(feature = "changelog")]
 pub use mod_links_changelog::*;
 
