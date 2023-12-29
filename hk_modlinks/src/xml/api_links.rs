@@ -1,10 +1,22 @@
 use std::borrow::Cow;
 
-use serde::{Deserialize, Serialize};
+use const_format::concatcp;
 
-use super::{FileList, Links};
+use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+use super::{FileList, Links, APILINKS_SCHEMA_URL, NAMESPACE, XSD, XSI};
+
+const ATTRS: &[(&str, &str)] = &[
+    ("@xmlns", NAMESPACE),
+    ("@xmlns:xsd", XSD),
+    ("@xmlns:xsi", XSI),
+    (
+        "@xsi:schemaLocation",
+        concatcp!(NAMESPACE, ' ', APILINKS_SCHEMA_URL),
+    ),
+];
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct ApiLinks<'a> {
     #[serde(rename = "Manifest")]
     manifest: Manifest<'a>,
@@ -40,5 +52,19 @@ impl<'a> From<&'a crate::ApiLinks> for ApiLinks<'a> {
                 files: (&value.files).into(),
             },
         }
+    }
+}
+
+impl<'a> Serialize for ApiLinks<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut ser = serializer.serialize_struct("ApiLinks", ATTRS.len() + 1)?;
+
+        ser.serialize_field("Manifest", &self.manifest)?;
+
+        for (key, value) in ATTRS {
+            ser.serialize_field(key, value)?;
+        }
+
+        ser.end()
     }
 }
