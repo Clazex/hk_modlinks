@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt::{self, Display, Formatter};
 use std::num::ParseIntError;
 use std::str::FromStr;
@@ -10,7 +11,7 @@ use thiserror::Error;
 type N = u32;
 type VersionTuple = (N, N, N, N);
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, DeserializeFromStr)]
+#[derive(Debug, Clone, DeserializeFromStr)]
 pub struct Version(VersionTuple, String);
 
 #[derive(Debug, Clone, Error, PartialEq, Eq)]
@@ -19,6 +20,29 @@ pub enum ParseVersionError {
     BadSegmentLength(usize),
     #[error(transparent)]
     ParseIntError(#[from] ParseIntError),
+}
+
+impl PartialEq for Version {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl Eq for Version {}
+
+impl PartialOrd for Version {
+    #[inline]
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Version {
+    #[inline]
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.cmp(&other.0)
+    }
 }
 
 impl FromStr for Version {
@@ -107,7 +131,7 @@ impl Version {
         self.1
     }
 
-    fn parse(str: &str) -> Result<(N, N, N, N), ParseVersionError> {
+    fn parse(str: &str) -> Result<VersionTuple, ParseVersionError> {
         let segments: Vec<_> = str.split('.').collect();
 
         let [s1, s2, s3, s4] = segments.as_slice() else {
