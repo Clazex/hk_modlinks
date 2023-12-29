@@ -32,8 +32,8 @@ impl<'a> From<&'a crate::FileDef> for FileDef<'a> {
 }
 
 impl<'a> Debug for FileDef<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct("FileDef")
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FileDef")
             .field("sha256", &hex::encode_upper(self.sha256.as_ref()))
             .field("url", &self.url)
             .finish()

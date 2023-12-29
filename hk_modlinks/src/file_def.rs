@@ -1,4 +1,4 @@
-use std::fmt::{self, Debug, Formatter};
+use std::fmt::{self, Debug};
 
 use serde::{Deserialize, Serialize};
 use serde_with::{formats::Uppercase, hex::Hex, serde_as};
@@ -14,8 +14,8 @@ pub struct FileDef {
 }
 
 impl Debug for FileDef {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct("FileDef")
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FileDef")
             .field("sha256", &self.sha256())
             .field("url", &self.url)
             .finish()

@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
+use const_format::concatcp;
+
 use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
 use serde_with::rust::sets_duplicate_value_is_error;
-
-use const_format::concatcp;
 
 use super::{ModInfo, MODLINKS_SCHEMA_URL, NAMESPACE, XSD, XSI};
 

@@ -1,4 +1,4 @@
-use std::fmt::{self, Debug, Display, Formatter};
+use std::fmt::{self, Debug, Display};
 
 use serde::{Deserialize, Serialize};
 
@@ -15,7 +15,7 @@ pub enum Tag {
 }
 
 impl Display for Tag {
-	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-		<Self as Debug>::fmt(&self, fmt)
-	}
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        <Self as Debug>::fmt(self, f)
+    }
 }

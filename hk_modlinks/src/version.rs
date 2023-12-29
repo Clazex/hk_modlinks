@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::fmt::{self, Display, Formatter};
+use std::fmt::{self, Display};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
@@ -72,8 +72,8 @@ impl From<Version> for String {
 
 impl Display for Version {
     #[inline]
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        fmt.write_str(self.str())
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.str())
     }
 }
 
