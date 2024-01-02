@@ -13,6 +13,9 @@ use crate::Result;
 pub struct Validate {
     #[command(flatten)]
     in_args: InArgs,
+    /// Skip validating hash
+    #[arg(long)]
+    no_hash: bool,
 }
 
 impl Run for Validate {
@@ -29,6 +32,10 @@ impl Run for Validate {
                 m.join(", ")
             )
         })?;
+
+        if self.no_hash {
+            return Ok(());
+        }
 
         let agent = ureq::AgentBuilder::new().build();
         for (name, info) in mod_links {
