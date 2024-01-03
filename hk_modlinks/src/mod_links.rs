@@ -211,9 +211,9 @@ impl ModLinks {
                     .chain(info.integrations.iter())
                     .all(|i| self.contains(i))
                 {
-                    Some(name.as_str())
-                } else {
                     None
+                } else {
+                    Some(name.as_str())
                 }
             })
             .collect();
