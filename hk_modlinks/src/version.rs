@@ -70,6 +70,13 @@ impl From<Version> for String {
     }
 }
 
+impl From<VersionTuple> for Version {
+    #[inline]
+    fn from(value: VersionTuple) -> Self {
+        Self::new_from_tuple(value)
+    }
+}
+
 impl Display for Version {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
