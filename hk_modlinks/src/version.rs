@@ -18,7 +18,7 @@ pub struct Version(VersionTuple, String);
 pub enum ParseVersionError {
     #[error("Expect version to have 4 segments, got {0} segments")]
     BadSegmentLength(usize),
-    #[error(transparent)]
+    #[error("Failed when parsing segments: {0}")]
     ParseIntError(#[from] ParseIntError),
 }
 
