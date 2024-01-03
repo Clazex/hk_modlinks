@@ -80,7 +80,7 @@ impl From<VersionTuple> for Version {
 impl Display for Version {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.str())
+        self.str().fmt(f)
     }
 }
 
