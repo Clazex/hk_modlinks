@@ -15,7 +15,7 @@ pub enum Links {
 
 impl From<FileDef> for Links {
     fn from(value: FileDef) -> Self {
-        Self::new_universal(value)
+        Self::Universal(value)
     }
 }
 
@@ -26,12 +26,6 @@ impl From<(FileDef, FileDef, FileDef)> for Links {
 }
 
 impl Links {
-    #[inline]
-    #[must_use]
-    pub fn new_universal(file_def: FileDef) -> Self {
-        Self::Universal(file_def)
-    }
-
     #[must_use]
     pub fn new_platform_specific(windows: FileDef, mac: FileDef, linux: FileDef) -> Self {
         Self::PlatformSpecific {
