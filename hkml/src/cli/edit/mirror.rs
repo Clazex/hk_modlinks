@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 
 use clap::Args;
 
+use reqwest::blocking::Client;
+
 use sha2::{Digest, Sha256};
 
 use url::Url;
@@ -10,7 +12,8 @@ use url::Url;
 use hk_modlinks::{get_safe_mod_name, FileDef, Links};
 
 use super::{InArgs, Run};
-use crate::{cli::download_and_zip, Result};
+use crate::cli::download_and_zip;
+use crate::Result;
 
 #[derive(Args, Debug, Clone)]
 pub struct Mirror {
@@ -40,7 +43,7 @@ impl Run for Mirror {
         fs_extra::dir::create_all(&mods_dir, true)?;
         let mods_dir = fs::canonicalize(mods_dir)?;
 
-        let agent = ureq::AgentBuilder::new().build();
+        let client = &(*crate::CLIENT);
 
         mod_links
             .iter_mut()
@@ -51,7 +54,7 @@ impl Run for Mirror {
                 match &mut info.links {
                     Links::Universal(file) => {
                         download_and_update(
-                            &agent,
+                            client,
                             file,
                             &mods_dir,
                             format!("{base_name}.zip"),
@@ -65,7 +68,7 @@ impl Run for Mirror {
                         linux,
                     } => {
                         download_and_update(
-                            &agent,
+                            client,
                             windows,
                             &mods_dir,
                             format!("{base_name}-Win.zip"),
@@ -73,7 +76,7 @@ impl Run for Mirror {
                             &base_name,
                         )?;
                         download_and_update(
-                            &agent,
+                            client,
                             mac,
                             &mods_dir,
                             format!("{base_name}-Mac.zip"),
@@ -81,7 +84,7 @@ impl Run for Mirror {
                             &base_name,
                         )?;
                         download_and_update(
-                            &agent,
+                            client,
                             linux,
                             &mods_dir,
                             format!("{base_name}-Linux.zip"),
@@ -102,7 +105,7 @@ impl Run for Mirror {
 }
 
 fn download_and_update(
-    agent: &ureq::Agent,
+    client: &Client,
     file: &mut FileDef,
     mods_dir: impl AsRef<Path>,
     file_name: impl AsRef<str>,
@@ -111,7 +114,7 @@ fn download_and_update(
 ) -> Result {
     let file_name = file_name.as_ref();
 
-    let zip = download_and_zip(agent, file, fallback_name)?;
+    let zip = download_and_zip(client, file, fallback_name)?;
     fs::write(mods_dir.as_ref().join(file_name), &zip)?;
 
     file.sha256 = <Sha256 as Digest>::digest(zip).into();

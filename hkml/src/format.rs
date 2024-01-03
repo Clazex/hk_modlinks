@@ -1,6 +1,6 @@
 use std::ffi::OsStr;
 use std::fs;
-use std::io::{self, Error as IoError};
+use std::io;
 use std::path::Path;
 
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
@@ -33,7 +33,7 @@ impl Format {
             "yml" | "yaml" => Yaml,
             #[cfg(feature = "ron")]
             "ron" => Ron,
-            _ => Err(IoError::other(format!("Unknown extension: {ext:?}")))?,
+            _ => Err(io::Error::other(format!("Unknown extension: {ext:?}")))?,
         })
     }
 

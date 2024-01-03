@@ -20,9 +20,7 @@ use edit::*;
 use resolve::*;
 use validate::*;
 
-use crate::{Format, Result};
-
-const MODLINKS_DEFAULT_CAPACITY: usize = 3 * 128 * 1024;
+use crate::{Format, Result, MODLINKS_DEFAULT_CAPACITY};
 
 pub trait Run {
     fn run(self) -> Result;

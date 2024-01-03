@@ -3,6 +3,7 @@
 		"actix",
 		"concatcp",
 		"hkml",
+		"indicatif",
 		"itertools",
 		"ureq"
 	]
