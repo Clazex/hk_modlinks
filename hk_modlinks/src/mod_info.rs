@@ -18,6 +18,7 @@ use crate::{Links, Tag, Version};
 #[serde(rename_all = "kebab-case")]
 #[builder(derive(Debug), setter(into, strip_option))]
 pub struct ModInfo {
+    #[builder(default)]
     pub display_name: Option<String>,
     #[builder(default)]
     pub description: String,
@@ -28,6 +29,7 @@ pub struct ModInfo {
     #[builder(default, setter(each(name = "dependency", into)))]
     pub dependencies: BTreeSet<String>,
 
+    #[builder(try_setter)]
     pub repository: Url,
 
     #[builder(default)]
@@ -36,7 +38,7 @@ pub struct ModInfo {
     #[builder(default, setter(each(name = "integration", into)))]
     pub integrations: BTreeSet<String>,
 
-    #[builder(default, setter(each(name = "tag", into)))]
+    #[builder(default, setter(each(name = "tag")))]
     pub tags: BTreeSet<Tag>,
 
     #[builder(default, setter(each(name = "author", into)))]
