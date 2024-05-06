@@ -157,9 +157,16 @@ impl ModLinks {
         self.0.iter_mut()
     }
 
-    pub fn resolve_deps<'a>(
+    pub fn resolve_deps_single<'a>(
         &'a self,
-        iter: impl IntoIterator<Item = &'a str>,
+        name: &'a str,
+    ) -> Result<HashSet<&'a str>, Vec<&'a str>> {
+        self.resolve_deps(std::iter::once(name))
+    }
+
+    pub fn resolve_deps<'a, 'b: 'a>(
+        &'a self,
+        iter: impl IntoIterator<Item = &'b str>,
     ) -> Result<HashSet<&'a str>, Vec<&'a str>> {
         let mut to_resolve: BTreeSet<&'a str> = iter.into_iter().collect();
         let mut resolved: HashSet<&'a str> = Default::default();
@@ -239,7 +246,7 @@ impl ModLinks {
     }
 
     #[inline]
-    pub fn to_xml(self) -> Result<String, quick_xml::DeError> {
+    pub fn to_xml(&self) -> Result<String, quick_xml::DeError> {
         self.xml().to_xml()
     }
 
