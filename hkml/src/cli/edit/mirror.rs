@@ -9,7 +9,7 @@ use sha2::{Digest, Sha256};
 
 use url::Url;
 
-use hk_modlinks::{get_safe_mod_name, FileDef, Links};
+use hk_modlinks::{get_safe_mod_name, FileDef, Links, ModInfo};
 
 use super::{InArgs, Run};
 use crate::cli::download_and_zip;
@@ -21,6 +21,9 @@ pub struct Mirror {
     base_url: Url,
     #[arg(short, long)]
     dir: PathBuf,
+    /// Perform incremental mirroring according to previous mirror located in this directory
+    #[arg(short, long)]
+    prev: Option<PathBuf>,
     #[command(flatten)]
     in_args: InArgs,
 }
@@ -39,9 +42,39 @@ impl Run for Mirror {
         fs_extra::dir::create_all(&self.dir, true)?;
         let base_dir = fs::canonicalize(self.dir)?;
 
+        println!("Writing base url");
+        fs::write(base_dir.join("base-url.txt"), base_url.to_string())?;
+
+        println!("Writing orig ModLinks.xml");
+        fs::write(base_dir.join("ModLinks.orig.xml"), mod_links.to_xml()?)?;
+
         let mods_dir = base_dir.join("mods");
         fs_extra::dir::create_all(&mods_dir, true)?;
         let mods_dir = fs::canonicalize(mods_dir)?;
+
+        let prev_base_dir = self.prev.map(fs::canonicalize).transpose()?;
+        let prev_mods_dir = prev_base_dir
+            .as_ref()
+            .map(|x| x.join("mods"))
+            .map(fs::canonicalize)
+            .transpose()?;
+        let prev_mod_links = prev_base_dir
+            .as_ref()
+            .map(|x| x.join("ModLinks.xml"))
+            .map(InArgs::read_from_file)
+            .transpose()?;
+        let prev_orig_mod_links = prev_base_dir
+            .as_ref()
+            .map(|x| x.join("ModLinks.orig.xml"))
+            .map(InArgs::read_from_file)
+            .transpose()?;
+        let prev_base_url = prev_base_dir
+            .map(|x| x.join("base-url.txt"))
+            .map(fs::read_to_string)
+            .transpose()?
+            .map(|x| Url::parse(&x))
+            .transpose()?;
+        let prev_mods_url = prev_base_url.map(|x| x.join("mods/")).transpose()?;
 
         let client = &(*crate::CLIENT);
 
@@ -51,8 +84,37 @@ impl Run for Mirror {
                 let base_name = format!("{}-v{}", get_safe_mod_name(name), info.version);
                 println!("Downloading {name} as {base_name}");
 
+                let prev_orig_info = prev_orig_mod_links.as_ref().and_then(|x| x.get(name));
+
                 match &mut info.links {
                     Links::Universal(file) => {
+                        if let Some(ModInfo {
+                            links: Links::Universal(prev_orig_file),
+                            ..
+                        }) = prev_orig_info
+                        {
+                            if prev_orig_file.sha256 == file.sha256 {
+                                let prev_file = match prev_mod_links.as_ref().unwrap().get(name) {
+                                    Some(ModInfo {
+                                        links: Links::Universal(prev_file),
+                                        ..
+                                    }) => prev_file,
+                                    _ => panic!("Invalid previous mirror"),
+                                };
+
+                                migrate(
+                                    prev_file,
+                                    file,
+                                    prev_mods_dir.as_ref().unwrap(),
+                                    &mods_dir,
+                                    prev_mods_url.as_ref().unwrap(),
+                                    &mods_url,
+                                )?;
+
+                                return Ok(());
+                            }
+                        }
+
                         download_and_update(
                             client,
                             file,
@@ -67,30 +129,100 @@ impl Run for Mirror {
                         mac,
                         linux,
                     } => {
-                        download_and_update(
-                            client,
-                            windows,
-                            &mods_dir,
-                            format!("{base_name}-Win.zip"),
-                            &mods_url,
-                            &base_name,
-                        )?;
-                        download_and_update(
-                            client,
-                            mac,
-                            &mods_dir,
-                            format!("{base_name}-Mac.zip"),
-                            &mods_url,
-                            &base_name,
-                        )?;
-                        download_and_update(
-                            client,
-                            linux,
-                            &mods_dir,
-                            format!("{base_name}-Linux.zip"),
-                            &mods_url,
-                            &base_name,
-                        )?;
+                        let (mut windows_ok, mut mac_ok, mut linux_ok) = (false, false, false);
+
+                        if let Some(ModInfo {
+                            links:
+                                Links::PlatformSpecific {
+                                    windows: prev_orig_windows,
+                                    mac: prev_orig_mac,
+                                    linux: prev_orig_linux,
+                                },
+                            ..
+                        }) = prev_orig_info
+                        {
+                            let prev_mods_dir = prev_mods_dir.as_ref().unwrap();
+                            let prev_mods_url = prev_mods_url.as_ref().unwrap();
+                            let Some(ModInfo {
+                                links:
+                                    Links::PlatformSpecific {
+                                        windows: prev_windows,
+                                        mac: prev_mac,
+                                        linux: prev_linux,
+                                    },
+                                ..
+                            }) = prev_mod_links.as_ref().unwrap().get(name)
+                            else {
+                                panic!("Invalid previous mirror")
+                            };
+
+                            if prev_orig_windows.sha256 == windows.sha256 {
+                                windows_ok = true;
+                                migrate(
+                                    prev_windows,
+                                    windows,
+                                    prev_mods_dir,
+                                    &mods_dir,
+                                    prev_mods_url,
+                                    &mods_url,
+                                )?;
+                            }
+
+                            if prev_orig_mac.sha256 == mac.sha256 {
+                                mac_ok = true;
+                                migrate(
+                                    prev_mac,
+                                    mac,
+                                    prev_mods_dir,
+                                    &mods_dir,
+                                    prev_mods_url,
+                                    &mods_url,
+                                )?;
+                            }
+
+                            if prev_orig_linux.sha256 == linux.sha256 {
+                                linux_ok = true;
+                                migrate(
+                                    prev_linux,
+                                    linux,
+                                    prev_mods_dir,
+                                    &mods_dir,
+                                    prev_mods_url,
+                                    &mods_url,
+                                )?;
+                            }
+                        }
+
+                        if !windows_ok {
+                            download_and_update(
+                                client,
+                                windows,
+                                &mods_dir,
+                                format!("{base_name}-Win.zip"),
+                                &mods_url,
+                                &base_name,
+                            )?;
+                        }
+                        if !mac_ok {
+                            download_and_update(
+                                client,
+                                mac,
+                                &mods_dir,
+                                format!("{base_name}-Mac.zip"),
+                                &mods_url,
+                                &base_name,
+                            )?;
+                        }
+                        if !linux_ok {
+                            download_and_update(
+                                client,
+                                linux,
+                                &mods_dir,
+                                format!("{base_name}-Linux.zip"),
+                                &mods_url,
+                                &base_name,
+                            )?;
+                        }
                     }
                 };
 
@@ -102,6 +234,27 @@ impl Run for Mirror {
 
         Ok(())
     }
+}
+
+fn migrate(
+    prev_file: &FileDef,
+    file: &mut FileDef,
+    prev_mods_dir: impl AsRef<Path>,
+    mods_dir: impl AsRef<Path>,
+    prev_mods_url: &Url,
+    mods_url: &Url,
+) -> Result {
+    let path = prev_mods_url.make_relative(&prev_file.url).unwrap();
+    println!("Migrating {path} from previous mirror");
+
+    file.sha256 = prev_file.sha256;
+    file.url = mods_url.join(&path)?;
+    fs::copy(
+        prev_mods_dir.as_ref().join(&path),
+        mods_dir.as_ref().join(path),
+    )?;
+
+    Ok(())
 }
 
 fn download_and_update(
