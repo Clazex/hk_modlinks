@@ -1,9 +1,10 @@
-use std::fs;
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 use clap::Args;
 
 use reqwest::blocking::Client;
+use reqwest::StatusCode;
 
 use sha2::{Digest, Sha256};
 
@@ -102,16 +103,16 @@ impl Run for Mirror {
                                     _ => panic!("Invalid previous mirror"),
                                 };
 
-                                migrate(
+                                if migrate(
                                     prev_file,
                                     file,
                                     prev_mods_dir.as_ref().unwrap(),
                                     &mods_dir,
                                     prev_mods_url.as_ref().unwrap(),
                                     &mods_url,
-                                )?;
-
-                                return Ok(());
+                                )? {
+                                    return Ok(());
+                                }
                             }
                         }
 
@@ -156,40 +157,43 @@ impl Run for Mirror {
                                 panic!("Invalid previous mirror")
                             };
 
-                            if prev_orig_windows.sha256 == windows.sha256 {
-                                windows_ok = true;
-                                migrate(
+                            if prev_orig_windows.sha256 == windows.sha256
+                                && migrate(
                                     prev_windows,
                                     windows,
                                     prev_mods_dir,
                                     &mods_dir,
                                     prev_mods_url,
                                     &mods_url,
-                                )?;
+                                )?
+                            {
+                                windows_ok = true;
                             }
 
-                            if prev_orig_mac.sha256 == mac.sha256 {
-                                mac_ok = true;
-                                migrate(
+                            if prev_orig_mac.sha256 == mac.sha256
+                                && migrate(
                                     prev_mac,
                                     mac,
                                     prev_mods_dir,
                                     &mods_dir,
                                     prev_mods_url,
                                     &mods_url,
-                                )?;
+                                )?
+                            {
+                                mac_ok = true;
                             }
 
-                            if prev_orig_linux.sha256 == linux.sha256 {
-                                linux_ok = true;
-                                migrate(
+                            if prev_orig_linux.sha256 == linux.sha256
+                                && migrate(
                                     prev_linux,
                                     linux,
                                     prev_mods_dir,
                                     &mods_dir,
                                     prev_mods_url,
                                     &mods_url,
-                                )?;
+                                )?
+                            {
+                                linux_ok = true;
                             }
                         }
 
@@ -243,18 +247,22 @@ fn migrate(
     mods_dir: impl AsRef<Path>,
     prev_mods_url: &Url,
     mods_url: &Url,
-) -> Result {
+) -> Result<bool> {
     let path = prev_mods_url.make_relative(&prev_file.url).unwrap();
     println!("Migrating {path} from previous mirror");
 
     file.sha256 = prev_file.sha256;
     file.url = mods_url.join(&path)?;
-    fs::copy(
-        prev_mods_dir.as_ref().join(&path),
-        mods_dir.as_ref().join(path),
-    )?;
 
-    Ok(())
+    let prev_path = match fs::canonicalize(prev_mods_dir.as_ref().join(&path)) {
+        Ok(p) => p,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(false),
+        Err(e) => Err(e)?,
+    };
+
+    fs::copy(prev_path, mods_dir.as_ref().join(path))?;
+
+    Ok(true)
 }
 
 fn download_and_update(
@@ -267,7 +275,16 @@ fn download_and_update(
 ) -> Result {
     let file_name = file_name.as_ref();
 
-    let zip = download_and_zip(client, file, fallback_name)?;
+    let zip = match download_and_zip(client, file, fallback_name) {
+        Ok(zip) => zip,
+        Err(e) => match e.downcast_ref::<reqwest::Error>() {
+            Some(req_err) if req_err.status() == Some(StatusCode::NOT_FOUND) => {
+                println!("File Not Found! Skipping");
+                return Ok(());
+            }
+            _ => Err(e)?,
+        },
+    };
     fs::write(mods_dir.as_ref().join(file_name), &zip)?;
 
     file.sha256 = <Sha256 as Digest>::digest(zip).into();
