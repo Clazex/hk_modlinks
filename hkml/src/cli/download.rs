@@ -14,7 +14,7 @@ use reqwest::blocking::Client;
 
 use sha2::{Digest, Sha256};
 
-use zip::{write::FileOptions as ZipFileOptions, ZipArchive, ZipWriter};
+use zip::{write::SimpleFileOptions as ZipFileOptions, ZipArchive, ZipWriter};
 
 use hk_modlinks::{FileDef, Links, Platform};
 
@@ -23,8 +23,9 @@ use super::{InArgs, Run};
 use crate::{copy_pb_buf_read, copy_pb_slice, Result};
 
 lazy_static! {
+    // It is assumed that no mods exceeds the 4 GiB limit
     pub static ref BEST_COMPRESSION: ZipFileOptions =
-        ZipFileOptions::default().compression_level(Some(9));
+        ZipFileOptions::default().compression_level(Some(264));
 }
 
 #[derive(Args, Debug, Clone)]
@@ -172,10 +173,13 @@ pub fn download_and_verify(client: &Client, file: &FileDef) -> Result<(Vec<u8>, 
         .headers()
         .get(CONTENT_DISPOSITION.as_str())
         .and_then(|header| {
-            ContentDisposition::from_raw(header)
-                .unwrap()
-                .get_filename()
-                .map(ToOwned::to_owned)
+            ContentDisposition::from_raw(
+                &actix_web::http::header::HeaderValue::from_bytes(header.as_bytes())
+                    .expect("failed to perform identity transformation on header value"),
+            )
+            .unwrap()
+            .get_filename()
+            .map(ToOwned::to_owned)
         })
         .or_else(|| {
             resp.url()
