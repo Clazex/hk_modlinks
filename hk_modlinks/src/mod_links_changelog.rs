@@ -136,9 +136,7 @@ impl ModLinksChangelog {
             new
                 .iter()
                 .filter_map(|(name, new)| {
-					let Some(old) = old.get(name) else {
-						return None;
-					};
+					let old = old.get(name)?;
 
 					let ver = Self::gen_old_new(old.version.str(), new.version.str());
 					if ver.is_null() {
