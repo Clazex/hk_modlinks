@@ -37,7 +37,7 @@ pub struct Download {
     /// Mods to be downloaded
     #[arg(required = true, value_name = "MOD", group = "mod")]
     mods: Option<Vec<String>>,
-    /// Read mods to be downloaded from file, in which a mod name is stated each line, empty lines are ignored
+    /// Read mods to be downloaded from file (one mod name per line, empty lines or lines starting with "#" are ignored)
     #[arg(short = 'f', long = "file", value_name = "MODS FILE", group = "mod")]
     mods_file: Option<PathBuf>,
     /// Output directory or file

@@ -21,7 +21,6 @@ lazy_static! {
         .unwrap();
 }
 
-#[allow(dead_code)]
 pub fn copy_pb_buf_read<R: Read, W: Write>(
     r: &mut R,
     w: &mut W,
@@ -74,22 +73,22 @@ pub fn copy_pb_slice<W: Write>(slice: &[u8], w: &mut W, action: &'static str) ->
 
     // Write chunks until size exceeds
     if size > DEFAULT_BUF_SIZE {
-		loop {
-			match w.write(&slice[bytes_written..bytes_written + DEFAULT_BUF_SIZE]) {
-				Ok(0) => Err(io::Error::other(format!("Failed to write when {action}")))?,
-				Ok(n) => {
-					bytes_written += n;
-					pb.inc(n as u64);
+        loop {
+            match w.write(&slice[bytes_written..bytes_written + DEFAULT_BUF_SIZE]) {
+                Ok(0) => Err(io::Error::other(format!("Failed to write when {action}")))?,
+                Ok(n) => {
+                    bytes_written += n;
+                    pb.inc(n as u64);
 
-					if bytes_written + DEFAULT_BUF_SIZE > size {
-						break;
-					}
-				}
-				Err(ref e) if e.kind() == io::ErrorKind::Interrupted => continue,
-				Err(e) => Err(e)?,
-			}
-		}
-	}
+                    if bytes_written + DEFAULT_BUF_SIZE > size {
+                        break;
+                    }
+                }
+                Err(ref e) if e.kind() == io::ErrorKind::Interrupted => continue,
+                Err(e) => Err(e)?,
+            }
+        }
+    }
 
     // Write the rest
     loop {
