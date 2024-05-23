@@ -12,9 +12,9 @@ repository.workspace = true
 [dependencies]
 derive_builder = "0.20.0"
 hex = { version = "0.4.3", features = ["serde"] }
-serde = { version = "1.0.200", features = ["derive"] }
+serde = { version = "1.0.202", features = ["derive"] }
 serde_with = { version = "3.8.1", features = ["hex"] }
-thiserror = "1.0.59"
+thiserror = "1.0.61"
 url = { version = "2.5.0", features = ["serde"] }
 
 const_format = "0.2.32"
@@ -26,9 +26,9 @@ quick-xml = { version = "0.31.0", features = [
 clap = { version = "4.5.4", optional = true }
 
 ron = { version = "0.8.1", optional = true }
-serde_json = { version = "1.0.116", optional = true }
+serde_json = { version = "1.0.117", optional = true }
 serde_yaml = { version = "0.9.34", optional = true }
-toml = { version = "0.8.12", optional = true }
+toml = { version = "0.8.13", optional = true }
 
 handlebars = { version = "5.1.2", optional = true }
 lazy_static = { version = "1.4.0", optional = true }

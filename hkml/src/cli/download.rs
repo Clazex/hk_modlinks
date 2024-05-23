@@ -2,7 +2,7 @@ use std::fs::{self, File};
 use std::io::{self, Cursor};
 use std::path::{Path, PathBuf};
 
-use actix_web::http::header::{ContentDisposition, CONTENT_DISPOSITION};
+use actix_web::http::header::{ContentDisposition, CONTENT_DISPOSITION, CONTENT_LENGTH};
 
 use clap::Args;
 
@@ -10,7 +10,9 @@ use itertools::Itertools;
 
 use lazy_static::lazy_static;
 
-use reqwest::blocking::Client;
+use ureq::Agent;
+
+use url::Url;
 
 use sha2::{Digest, Sha256};
 
@@ -82,7 +84,6 @@ impl Run for Download {
                 .collect_vec()
         };
 
-        let client = &(*crate::CLIENT);
         let mut zip = if self.repack {
             Some(ZipWriter::new(File::create(&out)?))
         } else {
@@ -91,7 +92,7 @@ impl Run for Download {
 
         let mut process_fn: Box<dyn FnMut(_, _) -> Result> = if self.unpack {
             Box::new(|name: String, file: &FileDef| {
-                download_to_dir(client, file, out.join(&name), name)?;
+                download_to_dir(crate::AGENT.clone(), file, out.join(&name), name)?;
                 Ok(())
             })
         } else if self.repack {
@@ -99,7 +100,7 @@ impl Run for Download {
                 let zip = zip.as_mut().unwrap();
                 zip.add_directory(&name, *BEST_COMPRESSION)?;
 
-                let (buf, file_name) = download_and_verify(client, file)?;
+                let (buf, file_name) = download_and_verify(crate::AGENT.clone(), file)?;
 
                 if infer::archive::is_zip(&buf) {
                     let mut mod_zip = ZipArchive::new(Cursor::new(buf))?;
@@ -132,7 +133,7 @@ impl Run for Download {
             })
         } else {
             Box::new(|name: String, file: &FileDef| {
-                download_to_zip(client, file, &out, name)?;
+                download_to_zip(crate::AGENT.clone(), file, &out, name)?;
                 Ok(())
             })
         };
@@ -158,7 +159,7 @@ impl Run for Download {
 
         drop(process_fn);
 
-        if let Some(mut zip) = zip {
+        if let Some(zip) = zip {
             zip.finish()?;
         }
 
@@ -166,12 +167,11 @@ impl Run for Download {
     }
 }
 
-pub fn download_and_verify(client: &Client, file: &FileDef) -> Result<(Vec<u8>, Option<String>)> {
-    let resp = client.get(file.url.clone()).send()?.error_for_status()?;
+pub fn download_and_verify(agent: Agent, file: &FileDef) -> Result<(Vec<u8>, Option<String>)> {
+    let resp = agent.get(file.url.as_str()).call()?;
 
     let disposition = resp
-        .headers()
-        .get(CONTENT_DISPOSITION.as_str())
+        .header(CONTENT_DISPOSITION.as_str())
         .and_then(|header| {
             ContentDisposition::from_raw(
                 &actix_web::http::header::HeaderValue::from_bytes(header.as_bytes())
@@ -182,17 +182,19 @@ pub fn download_and_verify(client: &Client, file: &FileDef) -> Result<(Vec<u8>, 
             .map(ToOwned::to_owned)
         })
         .or_else(|| {
-            resp.url()
+            Url::parse(resp.get_url())
+                .unwrap()
                 .path_segments()
                 .and_then(|segments| segments.last().map(ToOwned::to_owned))
         });
 
     let buf = {
-        let size = resp.content_length().map(|i| i as usize);
+        let size = resp
+            .header(CONTENT_LENGTH.as_str())
+            .and_then(|i| i.parse::<usize>().ok());
         let mut buf = Vec::with_capacity(size.unwrap_or(crate::DEFAULT_BUF_SIZE));
 
-        let mut resp = resp;
-        copy_pb_buf_read(&mut resp, &mut buf, size, "Downloading")?;
+        copy_pb_buf_read(&mut resp.into_reader(), &mut buf, size, "Downloading")?;
 
         buf
     };
@@ -214,11 +216,11 @@ pub fn download_and_verify(client: &Client, file: &FileDef) -> Result<(Vec<u8>, 
 }
 
 pub fn download_and_zip(
-    client: &Client,
+    agent: Agent,
     file: &FileDef,
     fallback_name: impl AsRef<str>,
 ) -> Result<Vec<u8>> {
-    let (buf, name) = download_and_verify(client, file)?;
+    let (buf, name) = download_and_verify(agent, file)?;
     let file_name = name.unwrap_or_else(|| format!("{}.dll", fallback_name.as_ref()));
 
     if infer::archive::is_zip(&buf) {
@@ -239,12 +241,12 @@ pub fn download_and_zip(
 }
 
 pub fn download_to_dir(
-    client: &Client,
+    agent: Agent,
     file: &FileDef,
     dest: impl AsRef<Path>,
     fallback_name: impl AsRef<str>,
 ) -> Result {
-    let (buf, name) = download_and_verify(client, file)?;
+    let (buf, name) = download_and_verify(agent, file)?;
     let dest = dest.as_ref();
     let file_name = name.unwrap_or_else(|| format!("{}.dll", fallback_name.as_ref()));
 
@@ -259,12 +261,12 @@ pub fn download_to_dir(
 }
 
 pub fn download_to_zip(
-    client: &Client,
+    agent: Agent,
     file: &FileDef,
     dest: impl AsRef<Path>,
     fallback_name: impl AsRef<str>,
 ) -> Result {
-    let buf = download_and_zip(client, file, fallback_name)?;
+    let buf = download_and_zip(agent, file, fallback_name)?;
 
     let mut file = File::create(dest)?;
     copy_pb_slice(&buf, &mut file, "Writing")?;

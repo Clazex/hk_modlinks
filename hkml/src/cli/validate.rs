@@ -1,6 +1,6 @@
 use clap::Args;
 
-use reqwest::blocking::Client;
+use ureq::Agent;
 
 use hk_modlinks::{FileDef, Links};
 
@@ -36,18 +36,17 @@ impl Run for Validate {
             return Ok(());
         }
 
-        let client = &(*crate::CLIENT);
         for (name, info) in mod_links {
             match info.links {
-                Links::Universal(file) => verify(client, &name, file, None)?,
+                Links::Universal(file) => verify(crate::AGENT.clone(), &name, file, None)?,
                 Links::PlatformSpecific {
                     windows,
                     mac,
                     linux,
                 } => {
-                    verify(client, &name, *windows, Some("Windows"))?;
-                    verify(client, &name, *mac, Some("Mac"))?;
-                    verify(client, &name, *linux, Some("Linux"))?;
+                    verify(crate::AGENT.clone(), &name, *windows, Some("Windows"))?;
+                    verify(crate::AGENT.clone(), &name, *mac, Some("Mac"))?;
+                    verify(crate::AGENT.clone(), &name, *linux, Some("Linux"))?;
                 }
             };
         }
@@ -56,14 +55,14 @@ impl Run for Validate {
     }
 }
 
-fn verify(client: &Client, name: &String, file: FileDef, variant: Option<&'static str>) -> Result {
+fn verify(agent: Agent, name: &String, file: FileDef, variant: Option<&'static str>) -> Result {
     print!("Validating {name}");
     match variant {
         Some(variant) => println!(" ({variant})"),
         None => println!(),
     };
 
-    download_and_verify(client, &file)?;
+    download_and_verify(agent, &file)?;
 
     Ok(())
 }

@@ -7,11 +7,13 @@ compile_error!("This crate only supports Windows, Mac OS or Linux");
 
 use std::error::Error;
 
+use actix_web::http::header::{ACCEPT, CACHE_CONTROL, CONNECTION};
+
 use clap::Parser;
 
 use lazy_static::lazy_static;
 
-use reqwest::blocking::Client;
+use ureq::{Agent, MiddlewareNext, Request};
 
 use cli::*;
 use format::*;
@@ -24,7 +26,20 @@ const DEFAULT_BUF_SIZE: usize = 64 * 1024;
 const MODLINKS_DEFAULT_CAPACITY: usize = 3 * 128 * 1024;
 
 lazy_static! {
-    static ref CLIENT: Client = Client::builder().user_agent(USER_AGENT).build().unwrap();
+    static ref AGENT: Agent = ureq::builder()
+        .user_agent(USER_AGENT)
+        .middleware(|request: Request, next: MiddlewareNext<'_>| {
+            next.handle(
+                request
+                    .set(CONNECTION.as_str(), "keep-alive")
+                    .set(CACHE_CONTROL.as_str(), "no-cache, no-store")
+                    .set(
+                        ACCEPT.as_str(),
+                        "application/octet-stream, application/zip, application/x-msdownload",
+                    ),
+            )
+        })
+        .build();
 }
 
 fn main() -> Result {

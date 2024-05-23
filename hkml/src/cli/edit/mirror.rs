@@ -3,8 +3,7 @@ use std::{fs, io};
 
 use clap::Args;
 
-use reqwest::blocking::Client;
-use reqwest::StatusCode;
+use ureq::Agent;
 
 use sha2::{Digest, Sha256};
 
@@ -77,8 +76,6 @@ impl Run for Mirror {
             .transpose()?;
         let prev_mods_url = prev_base_url.map(|x| x.join("mods/")).transpose()?;
 
-        let client = &(*crate::CLIENT);
-
         mod_links
             .iter_mut()
             .try_for_each(|(name, info)| -> Result {
@@ -117,7 +114,7 @@ impl Run for Mirror {
                         }
 
                         download_and_update(
-                            client,
+                            crate::AGENT.clone(),
                             file,
                             &mods_dir,
                             format!("{base_name}.zip"),
@@ -199,7 +196,7 @@ impl Run for Mirror {
 
                         if !windows_ok {
                             download_and_update(
-                                client,
+                                crate::AGENT.clone(),
                                 windows,
                                 &mods_dir,
                                 format!("{base_name}-Win.zip"),
@@ -209,7 +206,7 @@ impl Run for Mirror {
                         }
                         if !mac_ok {
                             download_and_update(
-                                client,
+                                crate::AGENT.clone(),
                                 mac,
                                 &mods_dir,
                                 format!("{base_name}-Mac.zip"),
@@ -219,7 +216,7 @@ impl Run for Mirror {
                         }
                         if !linux_ok {
                             download_and_update(
-                                client,
+                                crate::AGENT.clone(),
                                 linux,
                                 &mods_dir,
                                 format!("{base_name}-Linux.zip"),
@@ -266,7 +263,7 @@ fn migrate(
 }
 
 fn download_and_update(
-    client: &Client,
+    agent: Agent,
     file: &mut FileDef,
     mods_dir: impl AsRef<Path>,
     file_name: impl AsRef<str>,
@@ -275,10 +272,10 @@ fn download_and_update(
 ) -> Result {
     let file_name = file_name.as_ref();
 
-    let zip = match download_and_zip(client, file, fallback_name) {
+    let zip = match download_and_zip(agent, file, fallback_name) {
         Ok(zip) => zip,
-        Err(e) => match e.downcast_ref::<reqwest::Error>() {
-            Some(req_err) if req_err.status() == Some(StatusCode::NOT_FOUND) => {
+        Err(e) => match e.downcast_ref::<ureq::Error>() {
+            Some(ureq::Error::Status(404, _)) => {
                 println!("File Not Found! Skipping");
                 return Ok(());
             }
